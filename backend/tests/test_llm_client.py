@@ -135,3 +135,10 @@ async def test_stream_error_status():
     with pytest.raises(LLMError) as e:
         [p async for p in make_client(lambda r: httpx.Response(401)).stream("s", "u")]
     assert e.value.status == 401
+
+
+async def test_non_json_200_raises_llm_error():
+    client = make_client(lambda r: httpx.Response(200, text="OK", headers={"content-type": "text/plain"}))
+    with pytest.raises(LLMError) as e:
+        await client.complete("s", "u")
+    assert "proxy" in e.value.user_message

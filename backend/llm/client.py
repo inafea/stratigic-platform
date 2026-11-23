@@ -77,7 +77,13 @@ class LLMClient:
                     last = LLMError(f"network error: {e}", "تعذر الاتصال بخدمة الذكاء الاصطناعي.")
                 else:
                     if resp.status_code == 200:
-                        return resp.json()
+                        try:
+                            return resp.json()
+                        except ValueError as e:
+                            raise LLMError(
+                                f"non-JSON 200 response ({resp.headers.get('content-type')}): {resp.text[:200]!r}",
+                                "استجابة غير متوقعة من خدمة الذكاء الاصطناعي. قد يكون هناك وكيل شبكة (proxy) يعترض الاتصال.",
+                            ) from e
                     last = self._error_for_status(resp.status_code, resp.text[:500])
                     if resp.status_code not in RETRYABLE_STATUS:
                         raise last
