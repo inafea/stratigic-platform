@@ -18,6 +18,7 @@ from sqlmodel import Session, select
 
 from backend import auth, db, google_auth
 from backend.i18n import request_lang, tr
+from backend.billing.plans import get_catalog, public_catalog
 from backend.config import get_settings
 from backend.llm.client import LLMClient, LLMError
 from backend.ratelimit import limiter, llm_limit
@@ -41,6 +42,7 @@ FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
+    get_catalog()  # fail fast if plans.toml is invalid
     db.init_db()
     yield
 
@@ -108,6 +110,12 @@ def sse(event: str, data: dict) -> str:
 @app.get("/api/health")
 async def health():
     return {"status": "ok"}
+
+
+@app.get("/api/plans")
+async def plans():
+    """Plans and report packs with prices (SAR and USD), limits and features."""
+    return public_catalog()
 
 
 @app.get("/api/templates")

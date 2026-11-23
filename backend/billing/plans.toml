@@ -1,0 +1,69 @@
+# Plans, prices and limits for Mustashar.
+# Edit this file to change prices or limits; it is validated when the server starts.
+#
+# Limits: omit a limit (or leave it out) for "unlimited".
+#   reports_per_month   full analyses per monthly window
+#   chat_per_report     follow-up questions per report
+# Features:
+#   templates     industry / strategy-type templates (otherwise "auto" only)
+#   regenerate    rewrite a single section
+#   watermark     PDF export carries a "Free plan" watermark
+#   branded_pdf   company logo on the PDF (Business; UI comes later)
+#   seats         people who can share the plan (Business; UI comes later)
+# model_tier: lite | standard | premium  (the model for each tier is set in .env)
+
+default_plan = "free"
+
+[plans.free]
+name_ar = "مجاني"
+name_en = "Free"
+price = { monthly = { sar = 0, usd = 0 }, yearly = { sar = 0, usd = 0 } }
+model_tier = "lite"
+limits = { reports_per_month = 2, chat_per_report = 5 }
+features = { templates = false, regenerate = false, watermark = true, branded_pdf = false, seats = 1 }
+
+[plans.entrepreneur]
+name_ar = "رائد أعمال"
+name_en = "Entrepreneur"
+price = { monthly = { sar = 49, usd = 13 }, yearly = { sar = 470, usd = 125 } }
+model_tier = "standard"
+limits = { reports_per_month = 10, chat_per_report = 30 }
+features = { templates = true, regenerate = true, watermark = false, branded_pdf = false, seats = 1 }
+
+[plans.pro]
+name_ar = "احترافي"
+name_en = "Pro"
+price = { monthly = { sar = 149, usd = 39 }, yearly = { sar = 1430, usd = 375 } }
+model_tier = "premium"
+limits = { reports_per_month = 40 }  # chat: unlimited (fair use)
+features = { templates = true, regenerate = true, watermark = false, branded_pdf = false, seats = 1 }
+
+[plans.business]
+name_ar = "أعمال"
+name_en = "Business"
+price = { monthly = { sar = 499, usd = 129 }, yearly = { sar = 4790, usd = 1240 } }
+model_tier = "premium"
+limits = { reports_per_month = 150 }
+features = { templates = true, regenerate = true, watermark = false, branded_pdf = true, seats = 5 }
+
+# One-off report packs: credits used after the monthly quota runs out (or without a subscription).
+# Reports made with a pack credit get the pack's model and features.
+[packs.pack_1]
+name_ar = "تقرير واحد"
+name_en = "1 report"
+price = { sar = 29, usd = 8 }
+credits = 1
+valid_months = 12
+model_tier = "premium"
+limits = { chat_per_report = 30 }
+features = { templates = true, regenerate = true, watermark = false, branded_pdf = false, seats = 1 }
+
+[packs.pack_5]
+name_ar = "5 تقارير"
+name_en = "5 reports"
+price = { sar = 119, usd = 32 }
+credits = 5
+valid_months = 12
+model_tier = "premium"
+limits = { chat_per_report = 30 }
+features = { templates = true, regenerate = true, watermark = false, branded_pdf = false, seats = 1 }
