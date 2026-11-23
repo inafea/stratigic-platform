@@ -5,3 +5,5 @@
 .env
 *.db
 docs
+backend/tests
+.claude

@@ -1,0 +1,42 @@
+# Render Blueprint: New → Blueprint in the Render dashboard, pick this repo.
+# Secrets (sync: false) are entered in the dashboard and never stored in git.
+services:
+  - type: web
+    name: mustashar
+    runtime: docker
+    region: frankfurt          # next to the Neon database (eu-central-1)
+    plan: starter
+    branch: feature/accounts-billing   # switch to main once merged
+    autoDeploy: true
+    healthCheckPath: /api/health
+    envVars:
+      # --- secrets: Render asks for these ---
+      - key: DATABASE_URL       # Neon connection string (postgresql://...?sslmode=require)
+        sync: false
+      - key: LLM_API_KEY        # Gemini (or other provider) API key
+        sync: false
+      - key: PUBLIC_URL         # e.g. https://mustashar-xxxx.onrender.com (set after the first deploy)
+        sync: false
+      - key: GOOGLE_CLIENT_ID   # optional: Sign in with Google
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: CONTACT_EMAIL      # optional: where Contact us messages are emailed
+        sync: false
+      # --- plain settings ---
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: LOG_LEVEL
+        value: INFO
+      - key: LLM_PROVIDER
+        value: github           # = OpenAI-compatible client (Gemini's endpoint)
+      - key: LLM_BASE_URL
+        value: https://generativelanguage.googleapis.com/v1beta/openai
+      - key: LLM_MODEL
+        value: gemini-3.5-flash-lite
+      - key: LLM_TIMEOUT_SECONDS
+        value: "120"
+      - key: LLM_MAX_RETRIES
+        value: "2"
+      - key: MAIL_BACKEND
+        value: console          # emails appear in Render logs until SMTP is configured

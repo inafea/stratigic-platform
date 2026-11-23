@@ -98,3 +98,14 @@ python -m backend.tools.copy_sqlite_to_postgres --source sqlite:///./mustashar.d
 ```
 
 The target must be empty. The script creates the tables, copies every table in order and moves the id counters forward.
+
+## Deploy on Render
+
+`render.yaml` describes the service (Docker, Frankfurt region, health check `/api/health`).
+
+1. In Render: **New → Blueprint**, connect this GitHub repo and pick the branch.
+2. Enter the secrets Render asks for: `DATABASE_URL` (Neon), `LLM_API_KEY`, and later `PUBLIC_URL`
+   (the service URL, used in email links and the Google redirect).
+3. Apply. Every push to the branch redeploys automatically.
+
+Emails are only written to the logs until `MAIL_BACKEND=smtp` and the `SMTP_*` settings are added.
