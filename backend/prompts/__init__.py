@@ -50,7 +50,8 @@ def section_message(
 
 def chat_system(report_sections: dict[str, dict], data: IdeaInput | None = None) -> str:
     report_json = json.dumps(report_sections, ensure_ascii=False)
-    return strategy_system(data) + "\n\n" + render(load("chat_ar"), report=report_json)
+    base = _with_specialization(load("strategy_ar"), data) + "\n\n" + render(load("chat_ar"), report=report_json)
+    return _with_language(base, data)  # last, so it overrides chat_ar's "answer in Arabic"
 
 
 def chat_message(req: IdeaInput, history: list[tuple[str, str]], question: str) -> str:
@@ -79,9 +80,16 @@ def _with_specialization(base: str, data: IdeaInput | None) -> str:
     return f"{base}\n\n{extra}" if extra else base
 
 
+def _with_language(text: str, data: IdeaInput | None) -> str:
+    """Prompts are written in Arabic; for English reports a final override switches the output language."""
+    if getattr(data, "language", "ar") == "en":
+        return f"{text}\n\n{load('language_en')}"
+    return text
+
+
 def strategy_system(data: IdeaInput | None = None) -> str:
-    return _with_specialization(load("strategy_ar"), data)
+    return _with_language(_with_specialization(load("strategy_ar"), data), data)
 
 
 def clarify_system(data: IdeaInput | None = None) -> str:
-    return _with_specialization(load("clarify_ar"), data)
+    return _with_language(_with_specialization(load("clarify_ar"), data), data)

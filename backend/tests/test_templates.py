@@ -68,5 +68,29 @@ def test_old_database_gets_new_columns(tmp_path):
                           "VALUES ('x', 'y', '[]', '{}', 'done')"))
     db._add_missing_columns(engine)
     with engine.begin() as conn:
-        row = conn.execute(text("SELECT industry, strategy FROM report")).one()
-    assert tuple(row) == ("auto", "auto")
+        row = conn.execute(text("SELECT industry, strategy, language FROM report")).one()
+    assert tuple(row) == ("auto", "auto", "ar")
+
+
+# ---- report language ---------------------------------------------------------
+
+def test_arabic_is_default_and_has_no_override():
+    assert "LANGUAGE OVERRIDE" not in prompts.strategy_system(IdeaInput(**BASE))
+
+
+def test_english_override_comes_last_in_every_system_prompt():
+    data = IdeaInput(**BASE, language="en", industry="saas")
+    for system in (prompts.strategy_system(data), prompts.clarify_system(data), prompts.chat_system({}, data)):
+        assert system.rstrip().endswith("منخفض، متوسط، مرتفع.")
+        assert "LANGUAGE OVERRIDE" in system and "MRR" in system
+
+
+def test_unknown_language_rejected():
+    with pytest.raises(ValidationError):
+        IdeaInput(**BASE, language="fr")
+
+
+def test_report_keeps_language(client):
+    with client.stream("POST", "/api/analyze", json={**BASE, "language": "en"}) as r:
+        rid = parse_sse(r.read().decode("utf-8"))[0][1]["id"]
+    assert client.get(f"/api/reports/{rid}").json()["language"] == "en"

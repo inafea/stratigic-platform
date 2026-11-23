@@ -129,15 +129,34 @@ class LLMClient:
             except httpx.HTTPError as e:
                 raise LLMError(f"network error: {e}", "تعذر الاتصال بخدمة الذكاء الاصطناعي.") from e
 
+    @staticmethod
+    def _validate(schema: type[T], content: str) -> T:
+        """Validate JSON against `schema`; also accept it wrapped in one extra key, e.g. {"competition": {...}},
+        which some smaller models produce."""
+        try:
+            return schema.model_validate_json(content)
+        except ValidationError:
+            obj = json.loads(content)
+            if isinstance(obj, dict) and len(obj) == 1:
+                (inner,) = obj.values()
+                if isinstance(inner, dict):
+                    return schema.model_validate(inner)
+            raise
+
     async def complete_json(self, system: str, user: str, schema: type[T]) -> T:
         """Ask for a JSON object matching `schema` and validate it."""
         schema_hint = json.dumps(schema.model_json_schema(), ensure_ascii=False)
         system_full = f"{system}\n\nأعد الإجابة ككائن JSON صالح فقط يطابق هذا المخطط:\n{schema_hint}"
-        data = await self._post_with_retries(
-            self._payload(system_full, user, response_format={"type": "json_object"})
-        )
-        try:
-            content = data["choices"][0]["message"]["content"]
-            return schema.model_validate_json(content)
-        except (KeyError, IndexError, TypeError, ValidationError) as e:
-            raise LLMError(f"invalid JSON output: {e}", "لم يتمكن النموذج من إنتاج نتيجة منظمة. يرجى المحاولة مرة أخرى.") from e
+        payload = self._payload(system_full, user, response_format={"type": "json_object"})
+        attempts = 2  # models occasionally emit malformed JSON; one fresh try usually fixes it
+        for attempt in range(attempts):
+            data = await self._post_with_retries(payload)
+            try:
+                content = data["choices"][0]["message"]["content"]
+                return self._validate(schema, content)
+            except (KeyError, IndexError, TypeError, ValueError) as e:  # ValidationError is a ValueError
+                log.warning("invalid JSON output (attempt %d/%d): %s", attempt + 1, attempts, e)
+                if attempt == attempts - 1:
+                    raise LLMError(f"invalid JSON output: {e}",
+                                   "لم يتمكن النموذج من إنتاج نتيجة منظمة. يرجى المحاولة مرة أخرى.") from e
+        raise AssertionError("unreachable")

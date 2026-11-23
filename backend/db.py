@@ -21,6 +21,7 @@ class Report(SQLModel, table=True):
     goals: str
     industry: str = "auto"
     strategy: str = "auto"
+    language: str = "ar"
     answers: list = Field(default_factory=list, sa_column=Column(JSON))
     sections: dict = Field(default_factory=dict, sa_column=Column(JSON))
     status: str = "running"  # running | done | error
@@ -62,9 +63,9 @@ def _add_missing_columns(engine: Engine) -> None:
     """Add columns introduced after a database was created (no migration tool for SQLite here)."""
     existing = {c["name"] for c in inspect(engine).get_columns("report")}
     with engine.begin() as conn:
-        for name in ("industry", "strategy"):
+        for name, default in (("industry", "auto"), ("strategy", "auto"), ("language", "ar")):
             if name not in existing:
-                conn.execute(text(f"ALTER TABLE report ADD COLUMN {name} VARCHAR NOT NULL DEFAULT 'auto'"))
+                conn.execute(text(f"ALTER TABLE report ADD COLUMN {name} VARCHAR NOT NULL DEFAULT '{default}'"))
 
 
 def get_session():

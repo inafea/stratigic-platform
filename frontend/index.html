@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مستشار — محلل الاستراتيجية التجارية</title>
+    <script>
+        // Apply saved theme/language before first paint (avoids a flash of the wrong mode).
+        (function () {
+            var d = document.documentElement;
+            var theme = localStorage.getItem("theme") ||
+                (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+            d.dataset.theme = theme;
+            if (localStorage.getItem("lang") === "en") { d.lang = "en"; d.dir = "ltr"; }
+        })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
@@ -13,55 +23,62 @@
 </head>
 <body>
 <div class="layout">
-    <aside class="sidebar no-print" aria-label="التقارير السابقة">
-        <button class="btn btn-primary btn-block" id="newBtn">+ تحليل جديد</button>
-        <h2 class="sidebar-title">التقارير السابقة</h2>
+    <aside class="sidebar no-print" data-i18n-aria="history">
+        <button class="btn btn-primary btn-block" id="newBtn" data-i18n="newAnalysis">+ تحليل جديد</button>
+        <h2 class="sidebar-title" data-i18n="history">التقارير السابقة</h2>
         <ul id="historyList" class="history"></ul>
     </aside>
 
     <main class="main">
         <header class="header">
-            <h1>مستشار</h1>
-            <p class="subtitle">مستشارك الذكي لتحليل أفكار الأعمال وبناء الاستراتيجية</p>
+            <div>
+                <h1 data-i18n="appName">مستشار</h1>
+                <p class="subtitle" data-i18n="subtitle">مستشارك الذكي لتحليل أفكار الأعمال وبناء الاستراتيجية</p>
+            </div>
+            <div class="header-tools no-print">
+                <button class="btn btn-secondary btn-sm" id="langBtn" lang="en">English</button>
+                <button class="btn btn-secondary btn-sm btn-icon" id="themeBtn" data-i18n-title="toggleTheme"
+                        data-i18n-aria="toggleTheme">🌙</button>
+            </div>
         </header>
 
         <div id="alert" class="alert" role="alert" hidden></div>
 
         <!-- Step 1: idea + goals -->
         <section id="stepIdea" class="panel">
-            <div class="steps no-print"><span class="step active">1. الفكرة</span><span class="step">2. أسئلة توضيحية</span><span class="step">3. التحليل</span></div>
+            <div class="steps no-print"><span class="step active" data-i18n="step1">1. الفكرة</span><span class="step" data-i18n="step2">2. أسئلة توضيحية</span><span class="step" data-i18n="step3">3. التحليل</span></div>
             <form id="ideaForm">
-                <label for="idea">فكرتك التجارية</label>
-                <textarea id="idea" required minlength="10" maxlength="4000"
+                <label for="idea" data-i18n="ideaLabel">فكرتك التجارية</label>
+                <textarea id="idea" required minlength="10" maxlength="4000" data-i18n-placeholder="ideaPh"
                           placeholder="صف فكرتك: ما المنتج أو الخدمة؟ من العملاء؟ ما المشكلة التي تحلها؟ وفي أي سوق/مدينة؟"></textarea>
-                <label for="goals">أهدافك</label>
-                <textarea id="goals" required minlength="5" maxlength="2000"
+                <label for="goals" data-i18n="goalsLabel">أهدافك</label>
+                <textarea id="goals" required minlength="5" maxlength="2000" data-i18n-placeholder="goalsPh"
                           placeholder="مثال: تحقيق الربحية خلال سنة، الوصول إلى 1000 عميل، التوسع إلى مدينة ثانية..."></textarea>
                 <div class="row">
                     <div>
-                        <label for="industry">القطاع</label>
+                        <label for="industry" data-i18n="industryLabel">القطاع</label>
                         <select id="industry"><option value="auto">تحديد تلقائي</option></select>
                     </div>
                     <div>
-                        <label for="strategy">نوع الاستراتيجية</label>
+                        <label for="strategy" data-i18n="strategyLabel">نوع الاستراتيجية</label>
                         <select id="strategy"><option value="auto">تحديد تلقائي</option></select>
                     </div>
                 </div>
                 <div class="actions">
-                    <button type="submit" class="btn btn-primary" id="clarifyBtn">التالي ←</button>
+                    <button type="submit" class="btn btn-primary" id="clarifyBtn" data-i18n="next">التالي ←</button>
                 </div>
             </form>
         </section>
 
         <!-- Step 2: clarifying questions -->
         <section id="stepQuestions" class="panel" hidden>
-            <div class="steps no-print"><span class="step done">1. الفكرة</span><span class="step active">2. أسئلة توضيحية</span><span class="step">3. التحليل</span></div>
-            <p class="hint">أجب عن الأسئلة التالية لتحصل على تحليل أدق (يمكنك ترك أي سؤال فارغاً).</p>
+            <div class="steps no-print"><span class="step done" data-i18n="step1">1. الفكرة</span><span class="step active" data-i18n="step2">2. أسئلة توضيحية</span><span class="step" data-i18n="step3">3. التحليل</span></div>
+            <p class="hint" data-i18n="questionsHint">أجب عن الأسئلة التالية لتحصل على تحليل أدق (يمكنك ترك أي سؤال فارغاً).</p>
             <form id="questionsForm">
                 <div id="questionsList"></div>
                 <div class="actions">
-                    <button type="button" class="btn btn-secondary" id="backBtn">→ رجوع</button>
-                    <button type="submit" class="btn btn-primary" id="analyzeBtn">ابدأ التحليل</button>
+                    <button type="button" class="btn btn-secondary" id="backBtn" data-i18n="back">→ رجوع</button>
+                    <button type="submit" class="btn btn-primary" id="analyzeBtn" data-i18n="startAnalysis">ابدأ التحليل</button>
                 </div>
             </form>
         </section>
@@ -80,19 +97,19 @@
                     <p id="reportMeta" class="meta"></p>
                 </div>
                 <div class="no-print">
-                    <button class="btn btn-secondary" id="printBtn">⬇ تصدير PDF</button>
+                    <button class="btn btn-secondary" id="printBtn" data-i18n="exportPdf">⬇ تصدير PDF</button>
                 </div>
             </div>
             <div id="progress" class="progress no-print" hidden><div id="progressBar"></div></div>
             <div id="sections" class="sections"></div>
 
             <section id="chat" class="panel chat no-print" hidden>
-                <h3>اسأل مستشار عن التقرير</h3>
+                <h3 data-i18n="chatTitle">اسأل مستشار عن التقرير</h3>
                 <div id="chatLog" class="chat-log"></div>
                 <form id="chatForm" class="chat-form">
-                    <input id="chatInput" maxlength="2000" autocomplete="off"
+                    <input id="chatInput" maxlength="2000" autocomplete="off" data-i18n-placeholder="chatPh"
                            placeholder="مثال: ماذا لو بدأت بميزانية أقل؟ اشرح استراتيجية التسعير أكثر...">
-                    <button class="btn btn-primary" id="chatBtn">إرسال</button>
+                    <button class="btn btn-primary" id="chatBtn" data-i18n="send">إرسال</button>
                 </form>
             </section>
         </section>

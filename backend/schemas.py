@@ -32,6 +32,7 @@ STRATEGIES: dict[str, str] = {
 
 Industry = Literal["auto", "restaurant", "ecommerce", "saas", "retail", "real_estate", "education", "healthcare",
                    "services"]
+Language = Literal["ar", "en"]
 StrategyType = Literal["auto", "new_business", "expansion", "market_entry", "product_launch", "turnaround", "funding"]
 
 
@@ -40,6 +41,7 @@ class IdeaInput(BaseModel):
     goals: str = Field(min_length=5, max_length=2000)
     industry: Industry = "auto"
     strategy: StrategyType = "auto"
+    language: Language = "ar"
 
 
 class ClarifyingQuestions(BaseModel):

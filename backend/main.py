@@ -111,7 +111,8 @@ async def templates():
 
 def _request_of(r: db.Report) -> AnalysisRequest:
     return AnalysisRequest.model_validate(
-        {"idea": r.idea, "goals": r.goals, "industry": r.industry, "strategy": r.strategy, "answers": r.answers}
+        {"idea": r.idea, "goals": r.goals, "industry": r.industry, "strategy": r.strategy,
+         "language": r.language, "answers": r.answers}
     )
 
 
@@ -129,7 +130,8 @@ async def analyze(request: Request, req: AnalysisRequest, analyzer: Analyzer = D
     The report is saved as it is generated, so a partial report survives an error.
     """
     with Session(db.get_engine()) as s:
-        report = db.Report(idea=req.idea, goals=req.goals, industry=req.industry, strategy=req.strategy, answers=[a.model_dump() for a in req.answers])
+        report = db.Report(idea=req.idea, goals=req.goals, industry=req.industry, strategy=req.strategy,
+                           language=req.language, answers=[a.model_dump() for a in req.answers])
         s.add(report)
         s.commit()
         report_id = report.id
@@ -189,6 +191,7 @@ async def get_report(report_id: int, session: Session = Depends(db.get_session))
         "goals": r.goals,
         "industry": r.industry,
         "strategy": r.strategy,
+        "language": r.language,
         "answers": r.answers,
         "status": r.status,
         "sections": [

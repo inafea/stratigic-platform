@@ -62,6 +62,22 @@ async def test_complete_json_invalid_raises():
         await out.complete_json("s", "u", Thing)
 
 
+async def test_complete_json_unwraps_single_key():
+    out = await make_client(lambda r: ok('{"thing": {"name": "x", "score": 7}}')).complete_json("s", "u", Thing)
+    assert out == Thing(name="x", score=7)
+
+
+async def test_complete_json_non_json_raises():
+    with pytest.raises(LLMError):
+        await make_client(lambda r: ok("not json")).complete_json("s", "u", Thing)
+
+
+async def test_complete_json_retries_once_on_malformed_json():
+    replies = iter([ok('{"name": "x" "score": 7}'), ok('{"name": "x", "score": 7}')])
+    out = await make_client(lambda r: next(replies)).complete_json("s", "u", Thing)
+    assert out == Thing(name="x", score=7)
+
+
 async def test_retries_then_succeeds():
     calls = {"n": 0}
 
