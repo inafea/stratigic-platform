@@ -137,3 +137,11 @@ async def test_effort_sent_with_structured_output():
     oc = seen["body"]["output_config"]
     assert oc["effort"] == "low"
     assert oc["format"]["type"] == "json_schema"
+
+
+async def test_low_credit_message():
+    err = {"type": "error", "error": {"type": "invalid_request_error",
+                                      "message": "Your credit balance is too low to access the Anthropic API."}}
+    with pytest.raises(LLMError) as e:
+        await make(lambda r: httpx2.Response(400, json=err)).complete("s", "u")
+    assert "رصيد" in e.value.user_message

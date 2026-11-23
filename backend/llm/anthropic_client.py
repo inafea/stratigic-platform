@@ -58,6 +58,8 @@ class AnthropicLLMClient:
             return LLMError(f"rate limited: {e}", "تم تجاوز حد الطلبات لدى Claude. يرجى المحاولة بعد قليل.", 429)
         if isinstance(e, anthropic.NotFoundError):
             return LLMError(f"not found: {e}", "اسم النموذج غير صحيح. تحقق من LLM_MODEL.", 404)
+        if isinstance(e, anthropic.BadRequestError) and "credit balance" in str(e).lower():
+            return LLMError(f"no credit: {e}", "رصيد حساب Anthropic غير كافٍ. يرجى شحن الرصيد من Plans & Billing في console.anthropic.com.", 400)
         if isinstance(e, anthropic.BadRequestError):
             return LLMError(f"bad request: {e}", "رفضت خدمة Claude الطلب. يرجى المحاولة لاحقاً.", 400)
         if isinstance(e, anthropic.APITimeoutError):
