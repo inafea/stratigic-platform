@@ -76,7 +76,7 @@ frontend/
 | [x] T15 | Follow-up chat `/api/reports/{id}/chat` + UI | Chat answers in context |
 | [x] T16 | Regenerate a single section | One card refreshes |
 | [x] T17 | PDF export via the browser's print → "Save as PDF" with a print stylesheet (changed from WeasyPrint, which needs GTK on Windows) | PDF opens with correct Arabic |
-| [ ] T18 | Dockerfile + bilingual README | `docker run` serves the app |
+| [x] T18 | Dockerfile + bilingual README | `docker run` serves the app (⚠ image build not yet verified: Docker daemon was not running) |
 | [ ] T19 | Merge `enhancement` → `develop` (PR), then to `main` | Merged |
 | Later | Phases C–E as their own task lists | — |
 

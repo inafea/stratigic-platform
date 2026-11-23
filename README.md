@@ -1,167 +1,91 @@
-# Business Strategy Analyzer
+# مستشار — Mustashar
 
-A web-based application that leverages AI to analyze business ideas and goals, providing strategic recommendations powered by GitHub Models.
+**محلل استراتيجية الأعمال بالذكاء الاصطناعي** · An Arabic-first AI business-strategy advisor.
 
-## Features
+---
 
-- **Intuitive User Interface**: Clean, modern design for easy input of business ideas and goals
-- **AI-Powered Analysis**: Uses advanced language models (GPT-4.1-mini) to provide strategic insights
-- **Comprehensive Output**: Generates analysis covering:
-  - Market opportunity assessment
-  - Strategic recommendations
-  - Implementation plan
-  - Financial considerations
-  - Next steps and success metrics
+## بالعربية
 
-## Getting Started
+اكتب فكرتك التجارية وأهدافك، وأجب عن بضعة أسئلة توضيحية، ليُعدّ لك "مستشار" تقريراً استراتيجياً منظماً يظهر قسماً تلو الآخر:
 
-### Prerequisites
+- **الملخص التنفيذي** مع درجة جدوى من 100
+- **تحليل السوق** و**تحليل SWOT** و**المنافسة**
+- **مصفوفة المخاطر** (الاحتمال / الأثر / التخفيف)
+- **خطة 30/60/90 يوماً**، و**الاعتبارات المالية**، و**مؤشرات الأداء**
 
-- A modern web browser (Chrome, Firefox, Safari, Edge)
-- (Optional) GitHub Personal Access Token for higher rate limits
-  - Get yours from: https://github.com/settings/tokens
+بعد ذلك يمكنك **محاورة المستشار** حول التقرير ("ماذا لو...؟")، و**إعادة توليد أي قسم** بتعليمات إضافية، و**تصدير التقرير PDF**، والرجوع إلى **التقارير السابقة** في أي وقت.
 
-### Using the Application
+### التشغيل السريع
 
-1. **Open the Application**
-   - Open `index.html` in your web browser
-
-2. **Enter Your Information**
-   - **Business Idea**: Describe your business idea, target market, and the problem it solves
-   - **Business Goals**: Outline your goals and what you want to achieve
-
-3. **Configure AI Settings** (Optional)
-   - Provide a GitHub Personal Access Token for better rate limits
-   - Without a token, the app uses the free tier (may have rate limits)
-
-4. **Analyze**
-   - Click "Analyze with AI" button
-   - Wait for the AI to generate your strategic analysis
-   - Review the comprehensive recommendations
-
-5. **Clear**
-   - Use "Clear" button to reset and start over
-
-## API Integration
-
-### Supported Models
-
-- **GPT-4.1-mini** (Default): Balanced performance and cost for strategic analysis
-- Other models can be configured by modifying `CONFIG.MODEL` in `app.js`
-
-Available models:
-- `gpt-4.1-mini` - Best for general use
-- `gpt-4.1` - Better quality, lower latency
-- `gpt-5-mini` - Latest lightweight model
-- `gpt-4o-mini` - Cost-effective option
-
-### Authentication
-
-The application supports:
-- **Free Tier**: No authentication required (limited rate limits)
-- **GitHub Token**: Provide a Personal Access Token for higher rate limits and reliability
-
-## File Structure
-
-```
-Stratigic-Platform/
-├── index.html          # Main HTML interface
-├── app.js              # JavaScript application logic
-└── README.md           # This file
+```bash
+python -m venv .venv
+.venv\Scripts\activate          # Windows  (macOS/Linux: source .venv/bin/activate)
+pip install -r requirements.txt
+copy .env.example .env          # ثم ضع رمز GitHub في LLM_API_KEY
+uvicorn backend.main:app --reload
 ```
 
-## Features Explained
+افتح <http://localhost:8000>.
 
-### Market Opportunity Analysis
-- Evaluates market size and growth potential
-- Analyzes competitive landscape
-- Identifies your unique value proposition
+> للتجربة بدون مفتاح: ضع `LLM_PROVIDER=fake` في `.env` لتحصل على بيانات تجريبية.
 
-### Strategic Recommendations
-- Identifies key success factors
-- Assesses potential risks with mitigation strategies
-- Highlights growth opportunities
+---
 
-### Implementation Plan
-- Phase-based action items
-- Key milestones to track
-- Resource requirements
+## English
 
-### Financial Considerations
-- Estimates investment needs
-- Suggests revenue models
-- Projects break-even timeline
+### Features
+- Step flow: idea & goals → AI clarifying questions → analysis
+- Structured report (validated JSON) streamed section by section over SSE
+- Follow-up chat about the report, single-section regeneration with instructions
+- Saved reports (SQLite) with a history sidebar; print-to-PDF with an RTL print stylesheet
+- Per-IP rate limiting, request logging, retries with backoff, timeouts, Arabic error messages
+- XSS-safe rendering (text nodes only; chat Markdown sanitized with DOMPurify)
 
-## Tips for Best Results
+### Configuration (`.env`)
+| Variable | Default | Notes |
+|---|---|---|
+| `LLM_PROVIDER` | `github` | `github` (any OpenAI-compatible API) or `fake` (offline sample data) |
+| `LLM_API_KEY` | – | GitHub token with *Models* access, or the key for your provider |
+| `LLM_BASE_URL` | `https://models.github.ai/inference` | Any OpenAI-compatible `/chat/completions` base URL |
+| `LLM_MODEL` | `openai/gpt-4.1-mini` | |
+| `LLM_TIMEOUT_SECONDS` | `60` | |
+| `DATABASE_URL` | `sqlite:///./mustashar.db` | |
+| `RATE_LIMIT` | `10/minute` | Applies to endpoints that call the LLM |
 
-1. **Be Specific**: Provide detailed information about your business idea
-2. **Clarify Goals**: Be clear about your short-term and long-term objectives
-3. **Include Context**: Mention your target market, competitors, and unique advantages
-4. **Review Carefully**: The AI-generated analysis is a starting point; validate with market research
+### Run with Docker
+```bash
+docker build -t mustashar .
+docker run -p 8000:8000 --env-file .env -v mustashar-data:/data mustashar
+```
 
-## Error Handling
+### Tests
+```bash
+pytest
+```
+All tests use a fake LLM; no network or API key needed.
 
-The application handles various error scenarios:
-- **Invalid API Key**: Check your GitHub token
-- **Rate Limit**: Try again later or provide an API key
-- **Network Errors**: Check your internet connection
-- **Missing Fields**: Fill in all required inputs
+### API
+| Method | Path | Description |
+|---|---|---|
+| POST | `/api/clarify` | `{idea, goals}` → `{questions[]}` |
+| POST | `/api/analyze` | `{idea, goals, answers[]}` → SSE: `report`, `section`×8, `done` / `error` |
+| GET | `/api/reports` | List saved reports |
+| GET/DELETE | `/api/reports/{id}` | Full report with sections and chat messages / delete |
+| POST | `/api/reports/{id}/chat` | `{message}` → SSE: `delta`…, `done` |
+| POST | `/api/reports/{id}/sections/{key}/regenerate` | `{instructions?}` → new section |
 
-## Browser Compatibility
-
-- Chrome 90+
-- Firefox 88+
-- Safari 14+
-- Edge 90+
-
-## Security Notes
-
-- API keys are not stored locally
-- All requests go directly to GitHub Models API
-- No data is saved on any server
-- Your business information stays private
-
-## Troubleshooting
-
-### "Network error" message
-- Check your internet connection
-- Ensure you can access https://models.github.ai
-
-### "Rate limit exceeded"
-- Wait a few minutes before trying again
-- Provide a GitHub Personal Access Token for higher limits
-
-### "Invalid API key"
-- Verify your GitHub token is correct
-- Ensure the token has the necessary permissions
-
-## API Rate Limits
-
-- **Free Tier**: ~60 requests per hour (without token)
-- **With Token**: Varies based on GitHub plan (typically 1000+ per hour)
-
-## Future Enhancements
-
-- [ ] Save and export analysis reports
-- [ ] Export analysis as PDF
-- [ ] Multiple language support
-- [ ] Business plan generation
-- [ ] Financial projections
-- [ ] Competitor analysis
-- [ ] SWOT analysis visualization
-
-## License
-
-This project is open source and available under the MIT License.
-
-## Support
-
-For issues or questions:
-1. Check the troubleshooting section
-2. Verify your network connection
-3. Ensure you're using a supported browser
-4. Try refreshing the page
-
-## Disclaimer
-
-This tool provides AI-generated analysis for informational purposes. Always conduct thorough market research and consult with business professionals before making strategic decisions.
+### Project layout
+```
+backend/
+  main.py            FastAPI app & routes
+  config.py          settings (.env)
+  db.py              SQLite models (Report, Message)
+  schemas.py         request & report models
+  llm/client.py      OpenAI-compatible client (JSON output, streaming, retries)
+  llm/fake.py        offline fake LLM
+  prompts/           Arabic prompt templates
+  services/analyzer.py  clarify → section-by-section analysis, chat, regenerate
+  tests/
+frontend/            index.html, app.js, styles.css (RTL, no build step)
+docs/PLAN.md         roadmap & task tracker
+```
