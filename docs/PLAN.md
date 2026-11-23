@@ -65,8 +65,8 @@ frontend/
 | [x] T4 | Streaming support in the client (`stream`) | Mocked stream test passes |
 | [x] T5 | `schemas.py`: StrategyReport + section models | Schema tests pass |
 | [x] T6 | `prompts/strategy_ar.md` (system prompt) + prompt loader | Prompt renders with idea/goals |
-| [ ] T7 | `services/analyzer.py`: `clarify()` | Returns 3–5 questions (mocked) |
-| [ ] T8 | `services/analyzer.py`: `analyze()` section by section, yielding each section | Yields all sections (mocked) |
+| [x] T7 | `services/analyzer.py`: `clarify()` | Returns 3–5 questions (mocked) |
+| [x] T8 | `services/analyzer.py`: `analyze()` section by section, yielding each section | Yields all sections (mocked) |
 | [ ] T9 | FastAPI `main.py`: `/api/clarify`, `/api/analyze` (SSE), input validation, error handling | Requests to both endpoints succeed |
 | [ ] T10 | Frontend base: RTL layout, step form (idea → goals → questions) | Form submits to the API |
 | [ ] T11 | Frontend: SSE consumer + section cards, SWOT grid, roadmap timeline, DOMPurify | Live analysis shows in the browser |
