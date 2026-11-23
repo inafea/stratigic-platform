@@ -70,7 +70,7 @@ frontend/
 | [x] T9 | FastAPI `main.py`: `/api/clarify`, `/api/analyze` (SSE), input validation, error handling | Requests to both endpoints succeed |
 | [ ] T10 | Frontend base: RTL layout, step form (idea → goals → questions) | Form submits to the API |
 | [ ] T11 | Frontend: SSE consumer + section cards, SWOT grid, roadmap timeline, DOMPurify | Live analysis shows in the browser |
-| [ ] T12 | SQLite persistence (`Report`, `Message`) + `GET/POST /api/reports` | Reports survive a restart |
+| [x] T12 | SQLite persistence (`Report`, `Message`) + `GET/POST /api/reports` | Reports survive a restart |
 | [ ] T13 | Frontend history sidebar | Old reports reopen |
 | [ ] T14 | Rate limiting + logging | 429 after the limit; logs written |
 | [ ] T15 | Follow-up chat `/api/reports/{id}/chat` + UI | Chat answers in context |

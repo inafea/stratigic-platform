@@ -2,10 +2,23 @@ import json
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy.pool import StaticPool
+from sqlmodel import create_engine
+
+from backend import db
 
 from backend.main import app, get_analyzer
 from backend.services.analyzer import Analyzer
 from backend.tests.fakes import FakeLLM
+
+
+@pytest.fixture(autouse=True)
+def memory_db():
+    engine = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
+    db.set_engine(engine)
+    db.init_db()
+    yield engine
+    db.set_engine(None)
 
 
 @pytest.fixture

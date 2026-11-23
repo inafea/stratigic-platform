@@ -43,7 +43,7 @@ def test_analyze_error_event(client):
     app.dependency_overrides[get_analyzer] = lambda: Analyzer(FakeLLM(fail_on="Risks"))
     with client.stream("POST", "/api/analyze", json=IDEA) as r:
         events = parse_sse(r.read().decode("utf-8"))
-    assert [e for e, _ in events] == ["section", "section", "section", "error"]
+    assert [e for e, _ in events] == ["report", "section", "section", "section", "error"]
     assert events[-1][1]["message"] == "خطأ تجريبي"
 
 
