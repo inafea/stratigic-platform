@@ -24,7 +24,7 @@
 </head>
 <body>
 <div class="layout">
-    <aside class="sidebar no-print" data-i18n-aria="history">
+    <aside class="sidebar no-print" id="sidebar" data-i18n-aria="history" hidden>
         <button class="btn btn-primary btn-block" id="newBtn" data-i18n="newAnalysis">+ تحليل جديد</button>
         <h2 class="sidebar-title" data-i18n="history">التقارير السابقة</h2>
         <ul id="historyList" class="history"></ul>
@@ -40,6 +40,10 @@
                 </div>
             </div>
             <div class="header-tools no-print">
+                <div id="userMenu" class="user-menu" hidden>
+                    <span id="userName" class="user-name"></span>
+                    <button class="btn btn-secondary btn-sm" id="logoutBtn" data-i18n="logout">تسجيل الخروج</button>
+                </div>
                 <button class="btn btn-secondary btn-sm" id="langBtn" lang="en">English</button>
                 <button class="btn btn-secondary btn-sm btn-icon" id="themeBtn" data-i18n-title="toggleTheme"
                         data-i18n-aria="toggleTheme">🌙</button>
@@ -47,6 +51,17 @@
         </header>
 
         <div id="alert" class="alert" role="alert" hidden></div>
+        <div id="notice" class="notice" role="status" hidden></div>
+
+        <div id="verifyBanner" class="banner no-print" hidden>
+            <span data-i18n="verifyBanner">يرجى تأكيد بريدك الإلكتروني عبر الرابط الذي أرسلناه إليك.</span>
+            <button class="btn btn-secondary btn-sm" id="resendBtn" data-i18n="resend">إعادة إرسال الرابط</button>
+        </div>
+
+        <!-- Account screens (login, register, forgot, reset, verify, welcome) are built by app.js -->
+        <section id="authView" hidden></section>
+
+        <div id="appView" hidden>
 
         <!-- Step 1: idea + goals -->
         <section id="stepIdea" class="panel">
@@ -117,6 +132,7 @@
                 </form>
             </section>
         </section>
+        </div>
     </main>
 </div>
 </body>

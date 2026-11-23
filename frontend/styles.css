@@ -153,6 +153,33 @@ textarea:focus, input:focus, select:focus { outline: none; border-color: var(--p
 .card p { margin: 6px 0; }
 .card.busy { opacity: .5; pointer-events: none; }
 
+/* accounts */
+.auth { max-width: 440px; margin: 8px auto 24px; }
+.auth h2 { margin: 0 0 6px; font-size: 1.4rem; }
+.auth .lead { color: var(--muted); margin: 0 0 12px; }
+.auth form .btn-primary { width: 100%; margin-top: 18px; }
+.auth .links { display: flex; flex-direction: column; gap: 6px; margin-top: 16px; font-size: .95rem; }
+.auth a, .link { color: var(--primary); text-decoration: none; font-weight: 500; }
+.auth a:hover, .link:hover { text-decoration: underline; }
+.divider { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: .85rem; margin: 18px 0; }
+.divider::before, .divider::after { content: ""; flex: 1; border-top: 1px solid var(--border); }
+.btn-google {
+    display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%;
+    background: var(--input-bg); color: var(--text); border: 1px solid var(--border); text-decoration: none;
+}
+.btn-google:hover { background: var(--soft); text-decoration: none !important; }
+.btn-google svg { width: 18px; height: 18px; }
+.field-hint { color: var(--muted); font-size: .8rem; margin: 4px 0 0; }
+.notice { border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; background: var(--s-bg); color: var(--text); border: 1px solid var(--border); }
+.banner {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    border-radius: 10px; padding: 10px 16px; margin-bottom: 16px; background: var(--t-bg); border: 1px solid var(--border);
+}
+.user-menu { display: flex; align-items: center; gap: 8px; }
+.user-name { font-size: .85rem; color: var(--muted); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.layout.no-sidebar { grid-template-columns: 1fr; }
+.welcome-icon { width: 72px; height: 72px; margin-bottom: 8px; }
+
 /* summary */
 .summary-card { display: grid; grid-template-columns: 130px 1fr; gap: 20px; align-items: center; border-inline-start: 5px solid var(--primary); }
 .score { width: 120px; height: 120px; border-radius: 50%; display: grid; place-items: center; text-align: center; }

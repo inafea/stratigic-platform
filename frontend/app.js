@@ -88,6 +88,48 @@ const I18N = {
         ind_healthcare: "الصحة واللياقة", ind_services: "الخدمات المهنية والاستشارية",
         str_new_business: "إطلاق مشروع جديد", str_expansion: "توسع مشروع قائم", str_market_entry: "دخول سوق جديد",
         str_product_launch: "إطلاق منتج جديد", str_turnaround: "إنقاذ مشروع متعثر", str_funding: "التحضير للتمويل",
+        // accounts
+        logout: "تسجيل الخروج",
+        loginTitle: "تسجيل الدخول", loginLead: "مرحباً بعودتك إلى مستشار.",
+        registerTitle: "إنشاء حساب", registerLead: "أنشئ حساباً مجانياً لتحليل أفكارك وحفظ تقاريرك.",
+        email: "البريد الإلكتروني", password: "كلمة المرور", name: "الاسم",
+        passwordHint: "8 أحرف على الأقل.", newPassword: "كلمة المرور الجديدة", confirmPassword: "تأكيد كلمة المرور",
+        loginBtn: "دخول", registerBtn: "إنشاء الحساب", or: "أو",
+        google: "المتابعة باستخدام Google", googleError: "تعذر تسجيل الدخول عبر Google. يرجى المحاولة مرة أخرى.",
+        noAccount: "ليس لديك حساب؟ أنشئ حساباً", haveAccount: "لديك حساب؟ سجّل الدخول",
+        forgotLink: "نسيت كلمة المرور؟", backToLogin: "العودة لتسجيل الدخول",
+        forgotTitle: "نسيت كلمة المرور", forgotLead: "أدخل بريدك وسنرسل إليك رابطاً لإعادة تعيين كلمة المرور.",
+        sendLink: "إرسال الرابط", forgotSent: "إذا كان البريد مسجلاً لدينا، فقد أرسلنا إليه رابط إعادة التعيين. تحقق من بريدك.",
+        resetTitle: "تعيين كلمة مرور جديدة", resetBtn: "حفظ كلمة المرور", passwordsDiffer: "كلمتا المرور غير متطابقتين.",
+        resetDone: "تم تغيير كلمة المرور وتسجيل دخولك.", missingToken: "الرابط غير مكتمل. يرجى فتحه من البريد مرة أخرى.",
+        verifyTitle: "تأكيد البريد الإلكتروني", verifying: "جاري تأكيد بريدك...", verified: "تم تأكيد بريدك الإلكتروني. شكراً!",
+        continue: "متابعة",
+        verifyBanner: "يرجى تأكيد بريدك الإلكتروني عبر الرابط الذي أرسلناه إليك.", resend: "إعادة إرسال الرابط",
+        resent: "أرسلنا رابط تأكيد جديداً إلى بريدك.",
+        welcomeTitle: (n) => n ? `أهلاً ${n}!` : "أهلاً بك!",
+        welcomeLead: "حسابك جاهز. ابدأ بتحليل فكرتك الأولى، وسنساعدك قريباً في اختيار الباقة الأنسب لك.",
+        startFirst: "ابدأ التحليل الأول",
+        // accounts
+        logout: "تسجيل الخروج",
+        loginTitle: "تسجيل الدخول", loginLead: "مرحباً بعودتك إلى مستشار.",
+        registerTitle: "إنشاء حساب", registerLead: "أنشئ حساباً مجانياً لتحليل أفكارك وحفظ تقاريرك.",
+        email: "البريد الإلكتروني", password: "كلمة المرور", name: "الاسم",
+        passwordHint: "8 أحرف على الأقل.", newPassword: "كلمة المرور الجديدة", confirmPassword: "تأكيد كلمة المرور",
+        loginBtn: "دخول", registerBtn: "إنشاء الحساب", or: "أو",
+        google: "المتابعة باستخدام Google", googleError: "تعذر تسجيل الدخول عبر Google. يرجى المحاولة مرة أخرى.",
+        noAccount: "ليس لديك حساب؟ أنشئ حساباً", haveAccount: "لديك حساب؟ سجّل الدخول",
+        forgotLink: "نسيت كلمة المرور؟", backToLogin: "العودة لتسجيل الدخول",
+        forgotTitle: "نسيت كلمة المرور", forgotLead: "أدخل بريدك وسنرسل إليك رابطاً لإعادة تعيين كلمة المرور.",
+        sendLink: "إرسال الرابط", forgotSent: "إذا كان البريد مسجلاً لدينا، فقد أرسلنا إليه رابط إعادة التعيين. تحقق من بريدك.",
+        resetTitle: "تعيين كلمة مرور جديدة", resetBtn: "حفظ كلمة المرور", passwordsDiffer: "كلمتا المرور غير متطابقتين.",
+        resetDone: "تم تغيير كلمة المرور وتسجيل دخولك.", missingToken: "الرابط غير مكتمل. يرجى فتحه من البريد مرة أخرى.",
+        verifyTitle: "تأكيد البريد الإلكتروني", verifying: "جاري تأكيد بريدك...", verified: "تم تأكيد بريدك الإلكتروني. شكراً!",
+        continue: "متابعة",
+        verifyBanner: "يرجى تأكيد بريدك الإلكتروني عبر الرابط الذي أرسلناه إليك.", resend: "إعادة إرسال الرابط",
+        resent: "أرسلنا رابط تأكيد جديداً إلى بريدك.",
+        welcomeTitle: (n) => n ? `أهلاً ${n}!` : "أهلاً بك!",
+        welcomeLead: "حسابك جاهز. ابدأ بتحليل فكرتك الأولى، وسنساعدك قريباً في اختيار الباقة الأنسب لك.",
+        startFirst: "ابدأ التحليل الأول",
     },
     en: {
         pageTitle: "Mustashar — Business Strategy Analyzer",
@@ -146,6 +188,46 @@ const I18N = {
         str_new_business: "Launch a new business", str_expansion: "Expand an existing business",
         str_market_entry: "Enter a new market", str_product_launch: "Launch a new product",
         str_turnaround: "Turn around a struggling business", str_funding: "Prepare for funding",
+        logout: "Log out",
+        loginTitle: "Log in", loginLead: "Welcome back to Mustashar.",
+        registerTitle: "Create an account", registerLead: "Create a free account to analyze your ideas and keep your reports.",
+        email: "Email", password: "Password", name: "Name",
+        passwordHint: "At least 8 characters.", newPassword: "New password", confirmPassword: "Confirm password",
+        loginBtn: "Log in", registerBtn: "Create account", or: "or",
+        google: "Continue with Google", googleError: "Google sign-in didn't work. Please try again.",
+        noAccount: "No account? Create one", haveAccount: "Already have an account? Log in",
+        forgotLink: "Forgot your password?", backToLogin: "Back to log in",
+        forgotTitle: "Forgot password", forgotLead: "Enter your email and we'll send you a link to reset your password.",
+        sendLink: "Send link", forgotSent: "If this email is registered, we've sent it a reset link. Check your inbox.",
+        resetTitle: "Set a new password", resetBtn: "Save password", passwordsDiffer: "The passwords don't match.",
+        resetDone: "Your password was changed and you're logged in.", missingToken: "This link is incomplete. Please open it from the email again.",
+        verifyTitle: "Confirm your email", verifying: "Confirming your email...", verified: "Your email is confirmed. Thank you!",
+        continue: "Continue",
+        verifyBanner: "Please confirm your email using the link we sent you.", resend: "Resend link",
+        resent: "We sent a new confirmation link to your email.",
+        welcomeTitle: (n) => n ? `Welcome, ${n}!` : "Welcome!",
+        welcomeLead: "Your account is ready. Start with your first analysis; soon we'll also help you pick the plan that fits you best.",
+        startFirst: "Start your first analysis",
+        logout: "Log out",
+        loginTitle: "Log in", loginLead: "Welcome back to Mustashar.",
+        registerTitle: "Create an account", registerLead: "Create a free account to analyze your ideas and keep your reports.",
+        email: "Email", password: "Password", name: "Name",
+        passwordHint: "At least 8 characters.", newPassword: "New password", confirmPassword: "Confirm password",
+        loginBtn: "Log in", registerBtn: "Create account", or: "or",
+        google: "Continue with Google", googleError: "Google sign-in didn't work. Please try again.",
+        noAccount: "No account? Create one", haveAccount: "Already have an account? Log in",
+        forgotLink: "Forgot your password?", backToLogin: "Back to log in",
+        forgotTitle: "Forgot password", forgotLead: "Enter your email and we'll send you a link to reset your password.",
+        sendLink: "Send link", forgotSent: "If this email is registered, we've sent it a reset link. Check your inbox.",
+        resetTitle: "Set a new password", resetBtn: "Save password", passwordsDiffer: "The passwords don't match.",
+        resetDone: "Your password was changed and you're logged in.", missingToken: "This link is incomplete. Please open it from the email again.",
+        verifyTitle: "Confirm your email", verifying: "Confirming your email...", verified: "Your email is confirmed. Thank you!",
+        continue: "Continue",
+        verifyBanner: "Please confirm your email using the link we sent you.", resend: "Resend link",
+        resent: "We sent a new confirmation link to your email.",
+        welcomeTitle: (n) => n ? `Welcome, ${n}!` : "Welcome!",
+        welcomeLead: "Your account is ready. Start with your first analysis; soon we'll also help you pick the plan that fits you best.",
+        startFirst: "Start your first analysis",
     },
 };
 
@@ -169,6 +251,7 @@ const state = {
     reportLang: "ar",
     sections: {},  // key -> data for the open report (re-rendered on language change)
     templates: null,
+    user: null,   // logged-in user from /api/me, or null
     busy: false,
 };
 const TOTAL_SECTIONS = 8;
@@ -216,6 +299,7 @@ function applyLanguage() {
     $("langBtn").lang = other;
     fillTemplates();
     rerenderSections();  // button labels follow the UI language
+    if (!$("authView").hidden) route();  // rebuild the open account screen in the new language
     refreshHistory();
 }
 
@@ -253,7 +337,11 @@ async function api(path, options = {}) {
         headers: apiHeaders(),
         ...options,
     });
-    if (!res.ok) throw new Error(await errorMessage(res));
+    if (!res.ok) {
+        const msg = await errorMessage(res);
+        if (res.status === 401 && !path.startsWith("/api/auth/") && path !== "/api/me") onLoggedOut();
+        throw new Error(msg);
+    }
     return res.status === 204 ? null : res.json();
 }
 
@@ -417,6 +505,7 @@ function setProgress(n) {
 
 async function loadReport(id) {
     if (state.busy) return;
+    if (parseHash().path) go("");  // leave an account screen (e.g. welcome)
     showAlert("");
     try {
         const r = await api(`/api/reports/${id}`);
@@ -574,6 +663,7 @@ function markActive(id) {
 }
 
 async function refreshHistory() {
+    if (!state.user) return;
     try {
         const reports = await api("/api/reports");
         const items = reports.map((r) => {
@@ -637,8 +727,213 @@ function fillTemplates() {
     fill("strategy", state.templates.strategies, "str_");
 }
 
+// ---------- accounts: session, screens and routing ----------
+const GOOGLE_ICON = '<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34 6 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34 6 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>';
+
+const PUBLIC_ROUTES = new Set(["login", "register", "forgot", "reset", "verify"]);
+
+function parseHash() {
+    const raw = location.hash.replace(/^#\/?/, "");
+    const [path, query = ""] = raw.split("?");
+    return { path: path || "", params: new URLSearchParams(query) };
+}
+
+function go(path) {
+    if (location.hash === `#/${path}`) route();
+    else location.hash = `#/${path}`;
+}
+
+function showNotice(msg) {
+    $("notice").textContent = msg;
+    $("notice").hidden = !msg;
+}
+
+async function loadMe() {
+    try {
+        state.user = await api("/api/me");
+    } catch {
+        state.user = null;
+    }
+    renderUserChrome();
+}
+
+function renderUserChrome() {
+    const u = state.user;
+    $("userMenu").hidden = !u;
+    $("sidebar").hidden = !u;
+    document.querySelector(".layout").classList.toggle("no-sidebar", !u);
+    $("verifyBanner").hidden = !u || u.email_verified;
+    if (u) {
+        $("userName").textContent = u.name || u.email;
+        $("userName").title = u.email;
+    }
+}
+
+function onLoggedIn(user, next = "") {
+    state.user = user;
+    renderUserChrome();
+    resetToNew();
+    refreshHistory();
+    go(next);
+}
+
+function onLoggedOut() {
+    state.user = null;
+    state.reportId = null;
+    state.sections = {};
+    $("historyList").replaceChildren();
+    renderUserChrome();
+    go("login");
+}
+
+/** Build an account card: title, lead text, extra body, optional Google button, form, links below. */
+function authCard({ title, lead, fields = [], submit, onSubmit, google = false, links = [], body = [] }) {
+    const inputs = fields.map((f) => el("div", {},
+        el("label", { for: `f-${f.id}` }, t(f.label)),
+        el("input", {
+            id: `f-${f.id}`, type: f.type || "text", autocomplete: f.auto || "off", maxlength: f.max || "254",
+            ...(f.required !== false ? { required: "" } : {}), ...(f.min ? { minlength: String(f.min) } : {}),
+        }),
+        f.hint ? el("p", { class: "field-hint" }, t(f.hint)) : null));
+    const form = submit ? el("form", { novalidate: "" }, inputs, el("button", { class: "btn btn-primary", type: "submit" }, t(submit))) : null;
+    form?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        if (!form.reportValidity()) return;
+        showAlert("");
+        const btn = form.querySelector("button[type=submit]");
+        btn.disabled = true;
+        try {
+            const values = Object.fromEntries(fields.map((f) => [f.id, $(`f-${f.id}`).value]));
+            await onSubmit(values);
+        } catch (err) {
+            showAlert(err.message);
+        } finally {
+            btn.disabled = false;
+        }
+    });
+    let googleBtn = null;
+    if (google) {
+        const a = el("a", { class: "btn btn-google", href: `/api/auth/google/start?lang=${state.lang}` });
+        a.innerHTML = GOOGLE_ICON;  // static, trusted markup
+        a.append(t("google"));
+        googleBtn = [a, el("div", { class: "divider" }, t("or"))];
+    }
+    return el("div", { class: "panel auth" },
+        el("h2", {}, title), lead ? el("p", { class: "lead" }, lead) : null,
+        body, googleBtn, form,
+        links.length ? el("div", { class: "links" }, links.map(([label, path]) => el("a", { href: `#/${path}` }, t(label)))) : null);
+}
+
+const screens = {
+    login(params) {
+        const card = authCard({
+            title: t("loginTitle"), lead: t("loginLead"), google: true,
+            fields: [{ id: "email", label: "email", type: "email", auto: "email" },
+                     { id: "password", label: "password", type: "password", auto: "current-password", max: "128" }],
+            submit: "loginBtn",
+            onSubmit: async (v) => onLoggedIn(await api("/api/auth/login", { method: "POST", body: JSON.stringify(v) })),
+            links: [["forgotLink", "forgot"], ["noAccount", "register"]],
+        });
+        if (params.get("error") === "google") setTimeout(() => showAlert(t("googleError")));
+        return card;
+    },
+    register() {
+        return authCard({
+            title: t("registerTitle"), lead: t("registerLead"), google: true,
+            fields: [{ id: "name", label: "name", auto: "name", max: "100", required: false },
+                     { id: "email", label: "email", type: "email", auto: "email" },
+                     { id: "password", label: "password", type: "password", auto: "new-password", min: 8, max: "128", hint: "passwordHint" }],
+            submit: "registerBtn",
+            onSubmit: async (v) => onLoggedIn(await api("/api/auth/register", {
+                method: "POST", body: JSON.stringify({ ...v, language: state.lang }) }), "welcome"),
+            links: [["haveAccount", "login"]],
+        });
+    },
+    forgot() {
+        return authCard({
+            title: t("forgotTitle"), lead: t("forgotLead"),
+            fields: [{ id: "email", label: "email", type: "email", auto: "email" }],
+            submit: "sendLink",
+            onSubmit: async (v) => {
+                await api("/api/auth/password/forgot", { method: "POST", body: JSON.stringify(v) });
+                showNotice(t("forgotSent"));
+            },
+            links: [["backToLogin", "login"]],
+        });
+    },
+    reset(params) {
+        const token = params.get("token");
+        if (!token) return authCard({ title: t("resetTitle"), lead: t("missingToken"), links: [["forgotLink", "forgot"]] });
+        return authCard({
+            title: t("resetTitle"),
+            fields: [{ id: "password", label: "newPassword", type: "password", auto: "new-password", min: 8, max: "128", hint: "passwordHint" },
+                     { id: "confirm", label: "confirmPassword", type: "password", auto: "new-password", min: 8, max: "128" }],
+            submit: "resetBtn",
+            onSubmit: async (v) => {
+                if (v.password !== v.confirm) throw new Error(t("passwordsDiffer"));
+                const user = await api("/api/auth/password/reset", {
+                    method: "POST", body: JSON.stringify({ token, password: v.password }) });
+                onLoggedIn(user);
+                showNotice(t("resetDone"));
+            },
+        });
+    },
+    verify(params) {
+        const token = params.get("token");
+        const status = el("p", { class: "lead" }, token ? t("verifying") : t("missingToken"));
+        const card = authCard({ title: t("verifyTitle"), body: [status] });
+        if (token) {
+            api("/api/auth/verify", { method: "POST", body: JSON.stringify({ token }) })
+                .then((user) => {
+                    status.textContent = t("verified");
+                    if (state.user && state.user.id === user.id) { state.user = user; renderUserChrome(); }
+                    card.append(el("a", { class: "btn btn-primary", href: state.user ? "#/" : "#/login" }, t("continue")));
+                })
+                .catch((err) => { status.textContent = err.message; });
+        }
+        return card;
+    },
+    welcome() {
+        return authCard({
+            title: t("welcomeTitle")(state.user?.name), lead: t("welcomeLead"),
+            body: [el("img", { src: "logo.svg", alt: "", class: "welcome-icon" }),
+                   el("a", { class: "btn btn-primary", href: "#/" }, t("startFirst"))],
+        });
+    },
+};
+
+/** Show the screen for the current #/path. Logged-out users only see the public screens. */
+function route() {
+    const { path, params } = parseHash();
+    showAlert("");
+    if (!state.user && !PUBLIC_ROUTES.has(path)) return go("login");
+    if (state.user && (path === "login" || path === "register")) return go("");
+    const screen = screens[path];
+    $("authView").hidden = !screen;
+    $("appView").hidden = !!screen;
+    if (screen) {
+        showNotice("");
+        $("authView").replaceChildren(screen(params));
+        $("authView").querySelector("input")?.focus();
+    }
+}
+
+$("logoutBtn").addEventListener("click", async () => {
+    try { await api("/api/auth/logout", { method: "POST" }); } catch { /* logged out anyway */ }
+    onLoggedOut();
+});
+
+$("resendBtn").addEventListener("click", async () => {
+    try {
+        await api("/api/auth/verify/resend", { method: "POST" });
+        showNotice(t("resent"));
+    } catch (err) { showAlert(err.message); }
+});
+
+window.addEventListener("hashchange", route);
+
 // ---------- start ----------
-$("newBtn").addEventListener("click", resetToNew);
+$("newBtn").addEventListener("click", () => { if (parseHash().path) go(""); resetToNew(); });
 $("printBtn").addEventListener("click", () => window.print());
 $("langBtn").addEventListener("click", toggleLanguage);
 $("themeBtn").addEventListener("click", toggleTheme);
@@ -646,3 +941,4 @@ $("themeBtn").addEventListener("click", toggleTheme);
 applyTheme();
 applyLanguage();
 loadTemplates();
+loadMe().then(() => { route(); refreshHistory(); });
