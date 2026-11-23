@@ -9,7 +9,7 @@ from backend import db
 
 from backend.main import app, get_analyzer, limiter
 from backend.services.analyzer import Analyzer
-from backend.tests.fakes import FakeLLM
+from backend.llm.fake import FakeLLM
 
 
 @pytest.fixture(autouse=True)

@@ -1,7 +1,7 @@
 from backend.main import app, get_analyzer
 from backend.services.analyzer import Analyzer
 from backend.tests.conftest import parse_sse
-from backend.tests.fakes import FakeLLM
+from backend.llm.fake import FakeLLM
 from backend.tests.test_reports import run_analysis
 
 

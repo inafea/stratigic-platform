@@ -2,7 +2,7 @@ from backend.main import app, get_analyzer
 from backend.schemas import SECTIONS
 from backend.services.analyzer import Analyzer
 from backend.tests.conftest import parse_sse
-from backend.tests.fakes import FakeLLM
+from backend.llm.fake import FakeLLM
 
 IDEA = {"idea": "مطعم صحي للطلاب في الرياض", "goals": "ربح خلال سنة"}
 
@@ -51,7 +51,14 @@ def test_missing_api_key_returns_503(monkeypatch):
     from fastapi.testclient import TestClient
 
     from backend import main
-    monkeypatch.setattr(main, "get_settings", lambda: type("S", (), {"llm_api_key": ""})())
+    monkeypatch.setattr(main, "get_settings", lambda: type("S", (), {"llm_api_key": "", "llm_provider": "github"})())
     app.dependency_overrides.clear()
     r = TestClient(app).post("/api/clarify", json=IDEA)
     assert r.status_code == 503
+
+
+def test_frontend_served(client):
+    r = client.get("/")
+    assert r.status_code == 200
+    assert 'dir="rtl"' in r.text
+    assert client.get("/app.js").status_code == 200

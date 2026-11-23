@@ -3,7 +3,7 @@ import pytest
 from backend.llm.client import LLMError
 from backend.schemas import SECTIONS, AnalysisRequest, IdeaInput, StrategyReport
 from backend.services.analyzer import Analyzer
-from backend.tests.fakes import FakeLLM
+from backend.llm.fake import FakeLLM
 
 REQ = AnalysisRequest(idea="مطعم صحي للطلاب في الرياض", goals="ربح خلال سنة")
 

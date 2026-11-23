@@ -1,4 +1,4 @@
-"""Test doubles: a fake LLM that returns valid sample data for any schema."""
+"""Offline fake LLM (LLM_PROVIDER=fake): returns valid sample data. Used by tests and for UI demos."""
 from __future__ import annotations
 
 from pydantic import BaseModel

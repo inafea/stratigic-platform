@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مستشار — محلل الاستراتيجية التجارية</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js" defer></script>
+    <script src="app.js" defer></script>
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar no-print" aria-label="التقارير السابقة">
+        <button class="btn btn-primary btn-block" id="newBtn">+ تحليل جديد</button>
+        <h2 class="sidebar-title">التقارير السابقة</h2>
+        <ul id="historyList" class="history"></ul>
+    </aside>
+
+    <main class="main">
+        <header class="header">
+            <h1>مستشار</h1>
+            <p class="subtitle">مستشارك الذكي لتحليل أفكار الأعمال وبناء الاستراتيجية</p>
+        </header>
+
+        <div id="alert" class="alert" role="alert" hidden></div>
+
+        <!-- Step 1: idea + goals -->
+        <section id="stepIdea" class="panel">
+            <div class="steps no-print"><span class="step active">1. الفكرة</span><span class="step">2. أسئلة توضيحية</span><span class="step">3. التحليل</span></div>
+            <form id="ideaForm">
+                <label for="idea">فكرتك التجارية</label>
+                <textarea id="idea" required minlength="10" maxlength="4000"
+                          placeholder="صف فكرتك: ما المنتج أو الخدمة؟ من العملاء؟ ما المشكلة التي تحلها؟ وفي أي سوق/مدينة؟"></textarea>
+                <label for="goals">أهدافك</label>
+                <textarea id="goals" required minlength="5" maxlength="2000"
+                          placeholder="مثال: تحقيق الربحية خلال سنة، الوصول إلى 1000 عميل، التوسع إلى مدينة ثانية..."></textarea>
+                <div class="actions">
+                    <button type="submit" class="btn btn-primary" id="clarifyBtn">التالي ←</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Step 2: clarifying questions -->
+        <section id="stepQuestions" class="panel" hidden>
+            <div class="steps no-print"><span class="step done">1. الفكرة</span><span class="step active">2. أسئلة توضيحية</span><span class="step">3. التحليل</span></div>
+            <p class="hint">أجب عن الأسئلة التالية لتحصل على تحليل أدق (يمكنك ترك أي سؤال فارغاً).</p>
+            <form id="questionsForm">
+                <div id="questionsList"></div>
+                <div class="actions">
+                    <button type="button" class="btn btn-secondary" id="backBtn">→ رجوع</button>
+                    <button type="submit" class="btn btn-primary" id="analyzeBtn">ابدأ التحليل</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Loading -->
+        <div id="loading" class="loading no-print" hidden>
+            <div class="spinner"></div>
+            <p id="loadingText">جاري التحليل...</p>
+        </div>
+
+        <!-- Step 3: report -->
+        <section id="report" hidden>
+            <div class="report-head">
+                <div>
+                    <h2 id="reportTitle" class="report-title"></h2>
+                    <p id="reportMeta" class="meta"></p>
+                </div>
+                <div class="no-print">
+                    <button class="btn btn-secondary" id="printBtn">⬇ تصدير PDF</button>
+                </div>
+            </div>
+            <div id="progress" class="progress no-print" hidden><div id="progressBar"></div></div>
+            <div id="sections" class="sections"></div>
+
+            <section id="chat" class="panel chat no-print" hidden>
+                <h3>اسأل مستشار عن التقرير</h3>
+                <div id="chatLog" class="chat-log"></div>
+                <form id="chatForm" class="chat-form">
+                    <input id="chatInput" maxlength="2000" autocomplete="off"
+                           placeholder="مثال: ماذا لو بدأت بميزانية أقل؟ اشرح استراتيجية التسعير أكثر...">
+                    <button class="btn btn-primary" id="chatBtn">إرسال</button>
+                </form>
+            </section>
+        </section>
+    </main>
+</div>
+</body>
+</html>

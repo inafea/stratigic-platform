@@ -68,14 +68,14 @@ frontend/
 | [x] T7 | `services/analyzer.py`: `clarify()` | Returns 3–5 questions (mocked) |
 | [x] T8 | `services/analyzer.py`: `analyze()` section by section, yielding each section | Yields all sections (mocked) |
 | [x] T9 | FastAPI `main.py`: `/api/clarify`, `/api/analyze` (SSE), input validation, error handling | Requests to both endpoints succeed |
-| [ ] T10 | Frontend base: RTL layout, step form (idea → goals → questions) | Form submits to the API |
-| [ ] T11 | Frontend: SSE consumer + section cards, SWOT grid, roadmap timeline, DOMPurify | Live analysis shows in the browser |
+| [x] T10 | Frontend base: RTL layout, step form (idea → goals → questions) | Form submits to the API |
+| [x] T11 | Frontend: SSE consumer + section cards, SWOT grid, roadmap timeline, DOMPurify | Live analysis shows in the browser |
 | [x] T12 | SQLite persistence (`Report`, `Message`) + `GET/POST /api/reports` | Reports survive a restart |
-| [ ] T13 | Frontend history sidebar | Old reports reopen |
+| [x] T13 | Frontend history sidebar | Old reports reopen |
 | [x] T14 | Rate limiting + logging | 429 after the limit; logs written |
-| [ ] T15 | Follow-up chat `/api/reports/{id}/chat` + UI | Chat answers in context |
-| [ ] T16 | Regenerate a single section | One card refreshes |
-| [ ] T17 | PDF export (WeasyPrint, RTL) | PDF opens with correct Arabic |
+| [x] T15 | Follow-up chat `/api/reports/{id}/chat` + UI | Chat answers in context |
+| [x] T16 | Regenerate a single section | One card refreshes |
+| [x] T17 | PDF export via the browser's print → "Save as PDF" with a print stylesheet (changed from WeasyPrint, which needs GTK on Windows) | PDF opens with correct Arabic |
 | [ ] T18 | Dockerfile + bilingual README | `docker run` serves the app |
 | [ ] T19 | Merge `enhancement` → `develop` (PR), then to `main` | Merged |
 | Later | Phases C–E as their own task lists | — |

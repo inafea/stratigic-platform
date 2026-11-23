@@ -62,6 +62,9 @@ async def log_requests(request: Request, call_next):
 
 def get_analyzer() -> Analyzer:
     settings = get_settings()
+    if settings.llm_provider == "fake":
+        from backend.llm.fake import FakeLLM
+        return Analyzer(FakeLLM())
     if not settings.llm_api_key:
         raise HTTPException(503, "لم يتم إعداد مفتاح خدمة الذكاء الاصطناعي على الخادم.")
     return Analyzer(LLMClient(settings))
