@@ -37,7 +37,7 @@ uvicorn backend.main:app --reload
 - Step flow: idea & goals → AI clarifying questions → analysis
 - Structured report (validated JSON) streamed section by section over SSE
 - Follow-up chat about the report, single-section regeneration with instructions
-- Saved reports (SQLite) with a history sidebar; print-to-PDF with an RTL print stylesheet
+- Saved reports (SQLite locally, PostgreSQL/Neon in staging) with a history sidebar; print-to-PDF with an RTL print stylesheet
 - Per-IP rate limiting, request logging, retries with backoff, timeouts, Arabic error messages
 - XSS-safe rendering (text nodes only; chat Markdown sanitized with DOMPurify)
 
@@ -49,7 +49,7 @@ uvicorn backend.main:app --reload
 | `LLM_BASE_URL` | `https://models.github.ai/inference` | Any OpenAI-compatible `/chat/completions` base URL |
 | `LLM_MODEL` | `openai/gpt-4.1-mini` | For Claude: `claude-opus-5-5`, `claude-sonnet-5-5` or `claude-haiku-5-5` |
 | `LLM_TIMEOUT_SECONDS` | `60` | |
-| `DATABASE_URL` | `sqlite:///./mustashar.db` | |
+| `DATABASE_URL` | `sqlite:///./mustashar.db` | SQLite, or a PostgreSQL URL such as Neon's (`postgresql://...?sslmode=require`) |
 | `RATE_LIMIT` | `10/minute` | Applies to endpoints that call the LLM |
 
 ### Run with Docker
@@ -79,7 +79,7 @@ All tests use a fake LLM; no network or API key needed.
 backend/
   main.py            FastAPI app & routes
   config.py          settings (.env)
-  db.py              SQLite models (Report, Message)
+  db.py              database models (users, reports, billing) for SQLite or PostgreSQL
   schemas.py         request & report models
   llm/client.py      OpenAI-compatible client (JSON output, streaming, retries)
   llm/anthropic_client.py  Claude client (structured outputs, streaming, refusal fallbacks)
@@ -90,3 +90,11 @@ backend/
 frontend/            index.html, app.js, styles.css (RTL, no build step)
 docs/PLAN.md         roadmap & task tracker
 ```
+
+## Moving data from SQLite to PostgreSQL
+
+```bash
+python -m backend.tools.copy_sqlite_to_postgres --source sqlite:///./mustashar.db --target "postgresql://..."
+```
+
+The target must be empty. The script creates the tables, copies every table in order and moves the id counters forward.

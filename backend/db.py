@@ -123,12 +123,26 @@ class Message(SQLModel, table=True):
 _engine: Engine | None = None
 
 
+def normalize_url(url: str) -> str:
+    """Accept PostgreSQL URLs as providers give them (postgresql:// or postgres://) and use the psycopg 3 driver."""
+    for prefix in ("postgresql://", "postgres://"):
+        if url.startswith(prefix):
+            return "postgresql+psycopg://" + url[len(prefix):]
+    return url
+
+
+def make_engine(url: str) -> Engine:
+    url = normalize_url(url)
+    if url.startswith("sqlite"):
+        return create_engine(url, connect_args={"check_same_thread": False})
+    # managed PostgreSQL (e.g. Neon) closes idle connections: test before use and recycle regularly
+    return create_engine(url, pool_pre_ping=True, pool_recycle=300)
+
+
 def get_engine() -> Engine:
     global _engine
     if _engine is None:
-        url = get_settings().database_url
-        args = {"check_same_thread": False} if url.startswith("sqlite") else {}
-        _engine = create_engine(url, connect_args=args)
+        _engine = make_engine(get_settings().database_url)
     return _engine
 
 
@@ -153,7 +167,7 @@ def _add_missing_columns(engine: Engine) -> None:
             if name not in existing:
                 conn.execute(text(f"ALTER TABLE report ADD COLUMN {name} VARCHAR NOT NULL DEFAULT '{default}'"))
         if "user_id" not in existing:
-            conn.execute(text("ALTER TABLE report ADD COLUMN user_id INTEGER REFERENCES user(id)"))
+            conn.execute(text('ALTER TABLE report ADD COLUMN user_id INTEGER REFERENCES "user"(id)'))
             conn.execute(text("CREATE INDEX IF NOT EXISTS ix_report_user_id ON report (user_id)"))
 
 
