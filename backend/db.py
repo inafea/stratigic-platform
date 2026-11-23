@@ -1,4 +1,4 @@
-"""SQLite persistence for reports and follow-up chat messages."""
+"""SQLite persistence: users and auth, reports, and follow-up chat messages."""
 from __future__ import annotations
 
 from datetime import UTC, datetime
@@ -14,8 +14,42 @@ def _now() -> datetime:
     return datetime.now(UTC)
 
 
+# ---- accounts --------------------------------------------------------------------
+
+class User(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    email: str = Field(index=True, unique=True)  # stored lower-case
+    name: str = ""
+    password_hash: str | None = None  # None: Google-only account, or admin created by migration
+    google_sub: str | None = Field(default=None, index=True, unique=True)
+    language: str = "ar"
+    email_verified: bool = False
+    is_admin: bool = False
+    created_at: datetime = Field(default_factory=_now)
+
+
+class AuthSession(SQLModel, table=True):
+    """A logged-in browser session. Only the SHA-256 of the cookie token is stored."""
+    token_hash: str = Field(primary_key=True)
+    user_id: int = Field(foreign_key="user.id", index=True)
+    created_at: datetime = Field(default_factory=_now)
+    expires_at: datetime
+
+
+class EmailToken(SQLModel, table=True):
+    """One-time token sent by email (verify address / reset password). Only the hash is stored."""
+    token_hash: str = Field(primary_key=True)
+    user_id: int = Field(foreign_key="user.id", index=True)
+    purpose: str  # verify | reset
+    expires_at: datetime
+    used_at: datetime | None = None
+
+
+# ---- reports ---------------------------------------------------------------------
+
 class Report(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
+    user_id: int | None = Field(default=None, foreign_key="user.id", index=True)
     created_at: datetime = Field(default_factory=_now)
     idea: str
     goals: str
@@ -57,6 +91,7 @@ def init_db() -> None:
     engine = get_engine()
     SQLModel.metadata.create_all(engine)
     _add_missing_columns(engine)
+    _attach_orphan_reports(engine)
 
 
 def _add_missing_columns(engine: Engine) -> None:
@@ -66,6 +101,28 @@ def _add_missing_columns(engine: Engine) -> None:
         for name, default in (("industry", "auto"), ("strategy", "auto"), ("language", "ar")):
             if name not in existing:
                 conn.execute(text(f"ALTER TABLE report ADD COLUMN {name} VARCHAR NOT NULL DEFAULT '{default}'"))
+        if "user_id" not in existing:
+            conn.execute(text("ALTER TABLE report ADD COLUMN user_id INTEGER REFERENCES user(id)"))
+            conn.execute(text("CREATE INDEX IF NOT EXISTS ix_report_user_id ON report (user_id)"))
+
+
+def _attach_orphan_reports(engine: Engine) -> None:
+    """Reports made before accounts existed belong to the admin user (created if needed, no password:
+    set one through password reset)."""
+    with Session(engine) as s:
+        orphans = list(s.exec(select(Report).where(Report.user_id.is_(None))))
+        if not orphans:
+            return
+        email = get_settings().admin_email.strip().lower()
+        admin = s.exec(select(User).where(User.email == email)).first()
+        if admin is None:
+            admin = User(email=email, name="Admin", is_admin=True, email_verified=True)
+            s.add(admin)
+            s.flush()
+        for r in orphans:
+            r.user_id = admin.id
+            s.add(r)
+        s.commit()
 
 
 def get_session():

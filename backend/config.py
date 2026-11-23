@@ -18,6 +18,8 @@ class Settings(BaseSettings):
     llm_effort: str = ""
 
     database_url: str = "sqlite:///./mustashar.db"
+    # owner of reports created before accounts existed
+    admin_email: str = "admin@localhost"
 
     # limits apply per client IP to endpoints that call the LLM
     rate_limit: str = "10/minute"
