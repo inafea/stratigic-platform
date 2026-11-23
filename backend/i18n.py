@@ -24,6 +24,15 @@ EN: dict[str, str] = {
         "This page has expired. Please refresh it and try again.",
     "الرابط غير صالح أو منتهي الصلاحية. يرجى طلب رابط جديد.":
         "This link is invalid or has expired. Please request a new one.",
+    # plans
+    "لقد استخدمت كل تقارير باقتك لهذا الشهر. قم بالترقية أو اشترِ باقة تقارير للمتابعة.":
+        "You've used all of this month's reports on your plan. Upgrade or buy a report pack to continue.",
+    "وصلت إلى الحد الأقصى لأسئلة المتابعة لهذا التقرير في باقتك. قم بالترقية لطرح المزيد.":
+        "You've reached your plan's limit of follow-up questions for this report. Upgrade to ask more.",
+    "إعادة توليد الأقسام غير متاحة في باقتك الحالية. قم بالترقية لاستخدامها.":
+        "Regenerating sections isn't included in your current plan. Upgrade to use it.",
+    "قوالب القطاعات وأنواع الاستراتيجية متاحة في الباقات المدفوعة. اختر «تحديد تلقائي» أو قم بالترقية.":
+        "Industry and strategy-type templates are part of the paid plans. Choose \"Detect automatically\" or upgrade.",
     # LLM (shared)
     "انتهت مهلة الاتصال بخدمة الذكاء الاصطناعي.": "The connection to the AI service timed out.",
     "تعذر الاتصال بخدمة الذكاء الاصطناعي.": "Could not connect to the AI service.",

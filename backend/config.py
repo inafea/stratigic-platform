@@ -16,6 +16,10 @@ class Settings(BaseSettings):
     llm_temperature: float = 0.7
     # Claude only: low | medium | high | xhigh | max (empty = model default)
     llm_effort: str = ""
+    # model per plan tier (empty = LLM_MODEL). Same provider and key for all tiers.
+    llm_model_lite: str = ""
+    llm_model_standard: str = ""
+    llm_model_premium: str = ""
 
     database_url: str = "sqlite:///./mustashar.db"
     # owner of reports created before accounts existed

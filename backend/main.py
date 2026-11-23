@@ -18,6 +18,7 @@ from sqlmodel import Session, select
 
 from backend import auth, db, google_auth
 from backend.i18n import request_lang, tr
+from backend.billing import entitlements as ent_
 from backend.billing.plans import get_catalog, public_catalog
 from backend.config import get_settings
 from backend.llm.client import LLMClient, LLMError
@@ -80,6 +81,19 @@ async def log_requests(request: Request, call_next):
 
 # ---- dependencies --------------------------------------------------------------
 
+def tier_settings(settings, tier: str):
+    """Settings with LLM_MODEL replaced by the model configured for the plan tier, if any."""
+    model = getattr(settings, f"llm_model_{tier}", "") or settings.llm_model
+    return settings.model_copy(update={"llm_model": model})
+
+
+def build_analyzer(settings) -> Analyzer:
+    if settings.llm_provider == "anthropic":
+        from backend.llm.anthropic_client import AnthropicLLMClient
+        return Analyzer(AnthropicLLMClient(settings))
+    return Analyzer(LLMClient(settings))
+
+
 def get_analyzer() -> Analyzer:
     settings = get_settings()
     if settings.llm_provider == "fake":
@@ -87,10 +101,9 @@ def get_analyzer() -> Analyzer:
         return Analyzer(FakeLLM())
     if not settings.llm_api_key:
         raise HTTPException(503, "لم يتم إعداد مفتاح خدمة الذكاء الاصطناعي على الخادم.")
-    if settings.llm_provider == "anthropic":
-        from backend.llm.anthropic_client import AnthropicLLMClient
-        return Analyzer(AnthropicLLMClient(settings))
-    return Analyzer(LLMClient(settings))
+    base = build_analyzer(settings)
+    base._tier_factory = lambda tier: build_analyzer(tier_settings(settings, tier))
+    return base
 
 
 # ---- error handling ---------------------------------------------------------------
@@ -99,6 +112,13 @@ def get_analyzer() -> Analyzer:
 async def llm_error_handler(request: Request, exc: LLMError):
     log.error("LLM error: %s", exc)
     return JSONResponse(status_code=502, content={"detail": tr(exc.user_message, request_lang(request))})
+
+
+@app.exception_handler(ent_.QuotaError)
+async def quota_error_handler(request: Request, exc: ent_.QuotaError):
+    """402: the plan doesn't allow this; the frontend offers an upgrade."""
+    return JSONResponse(status_code=402, content={
+        "detail": tr(exc.user_message, request_lang(request)), "reason": exc.reason, "upgrade": True})
 
 
 def sse(event: str, data: dict) -> str:
@@ -116,6 +136,12 @@ async def health():
 async def plans():
     """Plans and report packs with prices (SAR and USD), limits and features."""
     return public_catalog()
+
+
+@app.get("/api/me/plan")
+async def my_plan(user: db.User = Depends(auth.current_user), session: Session = Depends(db.get_session)):
+    """The user's plan, this month's usage and what's unlocked."""
+    return ent_.get_entitlements(session, user).to_public()
 
 
 @app.get("/api/templates")
@@ -137,8 +163,13 @@ def _request_of(r: db.Report) -> AnalysisRequest:
 @app.post("/api/clarify")
 @llm_limit
 async def clarify(request: Request, data: IdeaInput, user: db.User = Depends(auth.current_user),
-                  analyzer: Analyzer = Depends(get_analyzer)):
-    return {"questions": await analyzer.clarify(data)}
+                  session: Session = Depends(db.get_session), analyzer: Analyzer = Depends(get_analyzer)):
+    """Questions are part of a report: refused when no report can be started (nothing is charged here)."""
+    ent = ent_.get_entitlements(session, user)
+    if ent.next_report_source is None:
+        raise ent_.QuotaError("reports", ent_.MSG_NO_REPORTS)
+    ent_.check_templates(data.industry, data.strategy, ent)
+    return {"questions": await analyzer.for_tier(ent.next_report_terms.model_tier).clarify(data)}
 
 
 @app.post("/api/analyze")
@@ -150,29 +181,44 @@ async def analyze(request: Request, req: AnalysisRequest, user: db.User = Depend
     The report is saved as it is generated, so a partial report survives an error.
     """
     with Session(db.get_engine()) as s:
+        ent = ent_.get_entitlements(s, user)
+        if ent.next_report_source is None:  # checked before anything is saved or generated
+            raise ent_.QuotaError("reports", ent_.MSG_NO_REPORTS)
+        ent_.check_templates(req.industry, req.strategy, ent)
         report = db.Report(user_id=user.id, idea=req.idea, goals=req.goals, industry=req.industry, strategy=req.strategy,
                            language=req.language, answers=[a.model_dump() for a in req.answers])
         s.add(report)
+        s.flush()
+        ent_.consume_report(s, user, report, ent)
         s.commit()
         report_id = report.id
+        tier = ent_.report_terms(report).model_tier
     lang = request_lang(request)
+    tier_analyzer = analyzer.for_tier(tier)
+
+    def fail(message: str, produced: int) -> str:
+        db.set_status(report_id, "error")
+        if produced == 0:  # nothing generated: give the report credit back
+            with Session(db.get_engine()) as s:
+                ent_.refund_report(s, report_id)
+        return sse("error", {"message": tr(message, lang)})
 
     async def events() -> AsyncIterator[str]:
         yield sse("report", {"id": report_id})
+        produced = 0
         try:
-            async for key, data in analyzer.analyze(req):
+            async for key, data in tier_analyzer.analyze(req):
                 db.save_section(report_id, key, data)
+                produced += 1
                 yield sse("section", {"key": key, "title": SECTIONS[key][1], "data": data})
             db.set_status(report_id, "done")
             yield sse("done", {"id": report_id})
         except LLMError as e:
             log.error("analysis %s failed: %s", report_id, e)
-            db.set_status(report_id, "error")
-            yield sse("error", {"message": tr(e.user_message, lang)})
+            yield fail(e.user_message, produced)
         except Exception:
             log.exception("unexpected failure in analysis %s", report_id)
-            db.set_status(report_id, "error")
-            yield sse("error", {"message": tr("حدث خطأ غير متوقع أثناء التحليل.", lang)})
+            yield fail("حدث خطأ غير متوقع أثناء التحليل.", produced)
 
     return StreamingResponse(events(), media_type="text/event-stream",
                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
@@ -248,8 +294,12 @@ async def regenerate_section(
     if key not in SECTIONS:
         raise HTTPException(404, "القسم غير موجود.")
     r = _get_report(session, report_id, user)
+    ent = ent_.get_entitlements(session, user)
+    ent_.check_regenerate(r, ent)
     req = _request_of(r)
-    data = await analyzer.regenerate_section(req, key, r.sections, body.instructions)
+    data = await analyzer.for_tier(ent_.report_tier(r, ent)).regenerate_section(req, key, r.sections, body.instructions)
+    session.add(db.UsageEvent(user_id=user.id, kind="regenerate", report_id=r.id))
+    session.commit()
     db.save_section(report_id, key, data)
     return {"key": key, "title": SECTIONS[key][1], "data": data}
 
@@ -266,6 +316,9 @@ async def chat(
 ):
     """Stream a follow-up answer as SSE `delta` events, then `done`. Both messages are saved."""
     r = _get_report(session, report_id, user)
+    ent = ent_.get_entitlements(session, user)
+    ent_.check_chat(session, r, ent)
+    tier_analyzer = analyzer.for_tier(ent_.report_tier(r, ent))
     req = _request_of(r)
     sections = dict(r.sections)
     history = [(m.role, m.content) for m in db.list_messages(session, report_id)][-10:]
@@ -276,7 +329,7 @@ async def chat(
     async def events() -> AsyncIterator[str]:
         parts: list[str] = []
         try:
-            async for chunk in analyzer.chat(req, sections, history, body.message):
+            async for chunk in tier_analyzer.chat(req, sections, history, body.message):
                 parts.append(chunk)
                 yield sse("delta", {"text": chunk})
         except LLMError as e:

@@ -100,7 +100,7 @@ A rule-based scorer maps the answers to a plan, shows **why** ("You expect aroun
 |---|---|---|
 | [x] P7 | `plans.toml` (TOML: built into Python, no new package) and loader (prices in SAR/USD, limits, features, model tier) | Schema-validated at startup; test |
 | [x] P8 | `Subscription`, `UsageEvent` and `CreditPack` tables; `entitlements()` service; monthly reset logic | Unit tests for quota math, period boundaries and pack credits |
-| [ ] P9 | `require_quota` guard on clarify, analyze, chat and regenerate; 402 with bilingual upgrade message; plan-based model choice in `get_analyzer` | Over-limit Free user gets 402; Pro user gets the premium model (tests) |
+| [x] P9 | `require_quota` guard on clarify, analyze, chat and regenerate; 402 with bilingual upgrade message; plan-based model choice in `get_analyzer` | Over-limit Free user gets 402; Pro user gets the premium model (tests) |
 | [ ] P10 | Feature flags: templates locked on Free, PDF watermark on Free, chat limit per report | UI hides or locks features; server enforces them too (tests) |
 
 **Step C: Recommender and pricing page**

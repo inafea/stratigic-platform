@@ -34,9 +34,9 @@ def test_chat_missing_report(client):
     assert client.post("/api/reports/999/chat", json={"message": "x"}).status_code == 404
 
 
-def test_regenerate_section(client, fake_llm):
-    rid = run_analysis(client)
-    r = client.post(f"/api/reports/{rid}/sections/swot/regenerate", json={"instructions": "ركز على التهديدات"})
+def test_regenerate_section(pro_client, fake_llm):
+    rid = run_analysis(pro_client)
+    r = pro_client.post(f"/api/reports/{rid}/sections/swot/regenerate", json={"instructions": "ركز على التهديدات"})
     assert r.status_code == 200
     assert r.json()["key"] == "swot"
     user = fake_llm.calls[-1][2]
@@ -44,8 +44,8 @@ def test_regenerate_section(client, fake_llm):
     assert '"swot"' not in user.split("الأقسام التي تم إعدادها سابقاً")[1]  # own section excluded from context
 
 
-def test_regenerate_saves(client):
-    rid = run_analysis(client)
+def test_regenerate_saves(pro_client):
+    rid = run_analysis(pro_client)
     other = {"strengths": ["جديد"], "weaknesses": [], "opportunities": [], "threats": []}
 
     class SwotLLM(FakeLLM):
@@ -53,8 +53,8 @@ def test_regenerate_saves(client):
             return schema.model_validate(other)
 
     app.dependency_overrides[get_analyzer] = lambda: Analyzer(SwotLLM())
-    client.post(f"/api/reports/{rid}/sections/swot/regenerate", json={})
-    sections = {s["key"]: s["data"] for s in client.get(f"/api/reports/{rid}").json()["sections"]}
+    pro_client.post(f"/api/reports/{rid}/sections/swot/regenerate", json={})
+    sections = {s["key"]: s["data"] for s in pro_client.get(f"/api/reports/{rid}").json()["sections"]}
     assert sections["swot"]["strengths"] == ["جديد"]
 
 

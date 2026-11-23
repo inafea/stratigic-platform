@@ -52,10 +52,10 @@ def test_templates_endpoint(client):
     assert {s["key"] for s in body["strategies"]} == set(STRATEGIES)
 
 
-def test_report_keeps_template_choice(client):
-    with client.stream("POST", "/api/analyze", json={**BASE, "industry": "retail", "strategy": "turnaround"}) as r:
+def test_report_keeps_template_choice(pro_client):
+    with pro_client.stream("POST", "/api/analyze", json={**BASE, "industry": "retail", "strategy": "turnaround"}) as r:
         rid = parse_sse(r.read().decode("utf-8"))[0][1]["id"]
-    full = client.get(f"/api/reports/{rid}").json()
+    full = pro_client.get(f"/api/reports/{rid}").json()
     assert (full["industry"], full["strategy"]) == ("retail", "turnaround")
 
 

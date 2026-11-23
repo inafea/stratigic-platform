@@ -52,6 +52,25 @@ def client(anon_client):
     return login_new_user(anon_client)
 
 
+@pytest.fixture
+def pro_client(client, memory_db):
+    """A browser logged in as TEST_USER on the Pro plan."""
+    give_plan(memory_db, TEST_USER["email"], "pro")
+    return client
+
+
+def give_plan(engine, email: str, plan: str, months: int = 1) -> None:
+    from datetime import UTC, datetime, timedelta
+
+    from sqlmodel import Session, select
+    with Session(engine) as s:
+        user = s.exec(select(db.User).where(db.User.email == email)).one()
+        now = datetime.now(UTC)
+        s.add(db.Subscription(user_id=user.id, plan_key=plan, current_period_start=now - timedelta(days=1),
+                              current_period_end=now + timedelta(days=30 * months)))
+        s.commit()
+
+
 def login_new_user(c: TestClient, **user) -> TestClient:
     r = c.post("/api/auth/register", json={**TEST_USER, **user})
     assert r.status_code == 201, r.text

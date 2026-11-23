@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Callable
 
 from backend import prompts
 from backend.llm.client import LLMClient
@@ -12,8 +12,14 @@ log = logging.getLogger(__name__)
 
 
 class Analyzer:
-    def __init__(self, llm: LLMClient):
+    def __init__(self, llm: LLMClient, tier_factory: Callable[[str], Analyzer] | None = None):
         self.llm = llm
+        self._tier_factory = tier_factory
+
+    def for_tier(self, tier: str) -> Analyzer:
+        """The analyzer for a plan's model tier (lite / standard / premium).
+        Without a factory (tests, fake provider) the same analyzer is used for every tier."""
+        return self._tier_factory(tier) if self._tier_factory else self
 
     async def clarify(self, data: IdeaInput) -> list[str]:
         """Return 3-5 clarifying questions for the idea."""
