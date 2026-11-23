@@ -86,3 +86,7 @@ frontend/
 - XSS check: an idea containing `<img src=x onerror=alert(1)>` renders as text.
 - With a missing or invalid key, the app shows a clear Arabic error message, with no hang and no stack trace.
 - The PDF export opens with correct RTL Arabic text.
+
+## Added after the original plan
+- [x] Claude provider (`LLM_PROVIDER=anthropic`) via the official Anthropic SDK — structured outputs, streaming, server-side refusal fallbacks.
+- [x] Non-JSON responses from the LLM endpoint are reported as a clear Arabic error (seen behind a network proxy).

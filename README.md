@@ -21,7 +21,7 @@
 python -m venv .venv
 .venv\Scripts\activate          # Windows  (macOS/Linux: source .venv/bin/activate)
 pip install -r requirements.txt
-copy .env.example .env          # ثم ضع رمز GitHub في LLM_API_KEY
+copy .env.example .env          # ثم ضع مفتاح Claude (أو رمز GitHub) في LLM_API_KEY
 uvicorn backend.main:app --reload
 ```
 
@@ -44,10 +44,10 @@ uvicorn backend.main:app --reload
 ### Configuration (`.env`)
 | Variable | Default | Notes |
 |---|---|---|
-| `LLM_PROVIDER` | `github` | `github` (any OpenAI-compatible API) or `fake` (offline sample data) |
-| `LLM_API_KEY` | – | GitHub token with *Models* access, or the key for your provider |
+| `LLM_PROVIDER` | `github` | `anthropic` (Claude, official SDK), `github` (any OpenAI-compatible API) or `fake` (offline sample data) |
+| `LLM_API_KEY` | – | Anthropic API key (`sk-ant-…`), GitHub token with *Models* access, or your provider's key |
 | `LLM_BASE_URL` | `https://models.github.ai/inference` | Any OpenAI-compatible `/chat/completions` base URL |
-| `LLM_MODEL` | `openai/gpt-4.1-mini` | |
+| `LLM_MODEL` | `openai/gpt-4.1-mini` | For Claude: `claude-opus-5-5`, `claude-sonnet-5-5` or `claude-haiku-5-5` |
 | `LLM_TIMEOUT_SECONDS` | `60` | |
 | `DATABASE_URL` | `sqlite:///./mustashar.db` | |
 | `RATE_LIMIT` | `10/minute` | Applies to endpoints that call the LLM |
@@ -82,6 +82,7 @@ backend/
   db.py              SQLite models (Report, Message)
   schemas.py         request & report models
   llm/client.py      OpenAI-compatible client (JSON output, streaming, retries)
+  llm/anthropic_client.py  Claude client (structured outputs, streaming, refusal fallbacks)
   llm/fake.py        offline fake LLM
   prompts/           Arabic prompt templates
   services/analyzer.py  clarify → section-by-section analysis, chat, regenerate

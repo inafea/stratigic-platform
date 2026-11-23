@@ -67,6 +67,9 @@ def get_analyzer() -> Analyzer:
         return Analyzer(FakeLLM())
     if not settings.llm_api_key:
         raise HTTPException(503, "لم يتم إعداد مفتاح خدمة الذكاء الاصطناعي على الخادم.")
+    if settings.llm_provider == "anthropic":
+        from backend.llm.anthropic_client import AnthropicLLMClient
+        return Analyzer(AnthropicLLMClient(settings))
     return Analyzer(LLMClient(settings))
 
 
