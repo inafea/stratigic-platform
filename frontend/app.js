@@ -326,6 +326,7 @@ function applyLanguage() {
     fillTemplates();
     rerenderSections();  // button labels follow the UI language
     renderChatQuota();
+    renderNav();
     if (!$("authView").hidden) route();  // rebuild the open account screen in the new language
     refreshHistory();
 }
@@ -767,7 +768,9 @@ function fillTemplates() {
 // ---------- accounts: session, screens and routing ----------
 const GOOGLE_ICON = '<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34 6 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34 6 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>';
 
-const PUBLIC_ROUTES = new Set(["login", "register", "forgot", "reset", "verify"]);
+const AUTH_ROUTES = new Set(["login", "register", "forgot", "reset", "verify"]);
+const PAGE_ROUTES = new Set(Object.keys(PUBLIC_PAGES));  // about, pricing, portfolio, contact (pages.js)
+const PUBLIC_ROUTES = new Set([...AUTH_ROUTES, ...PAGE_ROUTES]);
 
 function parseHash() {
     const raw = location.hash.replace(/^#\/?/, "");
@@ -798,6 +801,7 @@ async function loadMe() {
 function renderUserChrome() {
     const u = state.user;
     $("userMenu").hidden = !u;
+    renderNav();
     $("sidebar").hidden = !u;
     document.querySelector(".layout").classList.toggle("no-sidebar", !u);
     $("verifyBanner").hidden = !u || u.email_verified;
@@ -942,6 +946,34 @@ const screens = {
     },
 };
 
+// ---------- top navigation ----------
+const NAV_ITEMS = ["", "about", "pricing", "portfolio", "contact"];
+
+function renderNav() {
+    const x = PAGE_TEXT[state.lang] || PAGE_TEXT.ar;
+    const current = parseHash().path;
+    const names = { "": "home", about: "about", pricing: "pricing", portfolio: "portfolio", contact: "contact" };
+    $("mainNav").replaceChildren(...NAV_ITEMS.map((p) => el("a", {
+        href: `#/${p}`, class: current === p || (p === "" && !PUBLIC_ROUTES.has(current) && current !== "welcome") ? "active" : "",
+    }, x.nav[names[p]])));
+    $("guestMenu").replaceChildren(...(state.user ? [] : [
+        el("a", { class: "btn btn-secondary btn-sm", href: "#/login" }, x.login),
+        el("a", { class: "btn btn-primary btn-sm", href: "#/register" }, x.signup),
+    ]));
+    $("guestMenu").hidden = !!state.user;
+    $("menuBtn").setAttribute("aria-label", x.menu);
+}
+
+function closeMenu() {
+    document.body.classList.remove("menu-open");
+    $("menuBtn").setAttribute("aria-expanded", "false");
+}
+
+$("menuBtn").addEventListener("click", () => {
+    const open = document.body.classList.toggle("menu-open");
+    $("menuBtn").setAttribute("aria-expanded", String(open));
+});
+
 /** Brand panel shown next to the login / sign-up forms. */
 function heroPanel() {
     return el("aside", { class: "hero" },
@@ -958,8 +990,10 @@ function route() {
     showAlert("");
     if (!state.user && !PUBLIC_ROUTES.has(path)) return go("login");
     if (state.user && (path === "login" || path === "register")) return go("");
-    const screen = screens[path];
-    const authMode = PUBLIC_ROUTES.has(path);
+    const screen = screens[path] || PUBLIC_PAGES[path];
+    const authMode = AUTH_ROUTES.has(path);
+    renderNav();
+    closeMenu();
     document.body.classList.toggle("auth-mode", authMode);
     $("authView").hidden = !screen;
     $("appView").hidden = !!screen;
@@ -967,7 +1001,8 @@ function route() {
         showNotice("");
         const card = screen(params);
         $("authView").replaceChildren(authMode ? el("div", { class: "auth-shell" }, heroPanel(), card) : card);
-        $("authView").querySelector("input")?.focus();
+        if (authMode) $("authView").querySelector("input")?.focus();
+        window.scrollTo({ top: 0 });
     }
 }
 

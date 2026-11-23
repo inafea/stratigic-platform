@@ -16,7 +16,7 @@ from slowapi.errors import RateLimitExceeded
 
 from sqlmodel import Session, select
 
-from backend import auth, db, google_auth
+from backend import auth, contact, db, google_auth
 from backend.i18n import request_lang, tr
 from backend.billing import entitlements as ent_
 from backend.billing.plans import get_catalog, public_catalog
@@ -54,6 +54,7 @@ app.state.limiter = limiter
 app.middleware("http")(auth.csrf_middleware)
 app.include_router(auth.router)
 app.include_router(google_auth.router)
+app.include_router(contact.router)
 
 
 @app.exception_handler(RateLimitExceeded)

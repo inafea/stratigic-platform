@@ -39,6 +39,9 @@ class Settings(BaseSettings):
     google_client_id: str = ""
     google_client_secret: str = ""
 
+    # where Contact us messages are emailed (empty = only saved in the database)
+    contact_email: str = ""
+
     # email: console (log only) | smtp
     mail_backend: str = "console"
     mail_from: str = "Mustashar <no-reply@localhost>"

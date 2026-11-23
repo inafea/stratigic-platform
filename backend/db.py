@@ -45,6 +45,17 @@ class EmailToken(SQLModel, table=True):
     used_at: datetime | None = None
 
 
+class ContactMessage(SQLModel, table=True):
+    """A message sent from the Contact us page."""
+    id: int | None = Field(default=None, primary_key=True)
+    name: str
+    email: str
+    subject: str = ""
+    message: str
+    user_id: int | None = Field(default=None, foreign_key="user.id")
+    created_at: datetime = Field(default_factory=_now)
+
+
 # ---- billing ---------------------------------------------------------------------
 
 class Subscription(SQLModel, table=True):
