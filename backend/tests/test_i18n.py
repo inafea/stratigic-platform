@@ -20,8 +20,13 @@ def user_messages() -> set[str]:
     for path in [root / "main.py", root / "auth.py", *(root / "llm").glob("*.py")]:
         if path.name == "fake.py":
             continue
+        in_emails = False  # auth.EMAILS holds email texts with their own English versions
         for line in path.read_text(encoding="utf-8").splitlines():
-            if "JSON" in line and "المخطط" in line:  # prompt text, not a message
+            if line.startswith("EMAILS = {"):
+                in_emails = True
+            elif in_emails and line.startswith("}"):
+                in_emails = False
+            if in_emails or ("JSON" in line and "المخطط" in line):  # prompt text, not a message
                 continue
             found.update(m for m in ARABIC.findall(line) if m != "Mustashar — مستشار")
     return found

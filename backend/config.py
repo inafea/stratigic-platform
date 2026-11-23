@@ -28,6 +28,16 @@ class Settings(BaseSettings):
     # accounts
     session_days: int = 30
     cookie_secure: bool = False  # set true in production (HTTPS)
+    # base URL used in links inside emails
+    public_url: str = "http://127.0.0.1:8000"
+
+    # email: console (log only) | smtp
+    mail_backend: str = "console"
+    mail_from: str = "Mustashar <no-reply@localhost>"
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_password: str = ""
     log_level: str = "INFO"
 
 
