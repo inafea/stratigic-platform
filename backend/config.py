@@ -31,6 +31,10 @@ class Settings(BaseSettings):
     # base URL used in links inside emails
     public_url: str = "http://127.0.0.1:8000"
 
+    # Sign in with Google (empty = disabled). Redirect URI: {PUBLIC_URL}/api/auth/google/callback
+    google_client_id: str = ""
+    google_client_secret: str = ""
+
     # email: console (log only) | smtp
     mail_backend: str = "console"
     mail_from: str = "Mustashar <no-reply@localhost>"

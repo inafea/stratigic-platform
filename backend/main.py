@@ -16,7 +16,7 @@ from slowapi.errors import RateLimitExceeded
 
 from sqlmodel import Session, select
 
-from backend import auth, db
+from backend import auth, db, google_auth
 from backend.i18n import request_lang, tr
 from backend.config import get_settings
 from backend.llm.client import LLMClient, LLMError
@@ -50,6 +50,7 @@ app = FastAPI(title="Mustashar — مستشار", version="0.1.0", lifespan=life
 app.state.limiter = limiter
 app.middleware("http")(auth.csrf_middleware)
 app.include_router(auth.router)
+app.include_router(google_auth.router)
 
 
 @app.exception_handler(RateLimitExceeded)
