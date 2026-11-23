@@ -7,7 +7,8 @@ from sqlmodel import create_engine
 
 from backend import db
 
-from backend.main import app, get_analyzer, limiter
+from backend.main import app, get_analyzer
+from backend.ratelimit import limiter
 from backend.services.analyzer import Analyzer
 from backend.llm.fake import FakeLLM
 
@@ -36,8 +37,16 @@ def reset_rate_limits():
 def client(fake_llm):
     app.dependency_overrides[get_analyzer] = lambda: Analyzer(fake_llm)
     with TestClient(app) as c:
+        with_csrf(c)
         yield c
     app.dependency_overrides.clear()
+
+
+def with_csrf(c: TestClient) -> TestClient:
+    """Act like the browser: get the CSRF cookie and echo it in the header on every request."""
+    c.get("/api/health")
+    c.headers["X-CSRF-Token"] = c.cookies["mustashar_csrf"]
+    return c
 
 
 def parse_sse(text: str) -> list[tuple[str, dict]]:

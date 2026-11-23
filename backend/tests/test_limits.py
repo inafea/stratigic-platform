@@ -1,6 +1,6 @@
 import logging
 
-from backend import main
+from backend import ratelimit as main  # the limiter reads its settings there
 
 IDEA = {"idea": "مطعم صحي للطلاب في الرياض", "goals": "ربح خلال سنة"}
 

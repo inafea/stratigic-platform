@@ -15,6 +15,13 @@ EN: dict[str, str] = {
     "التقرير غير موجود.": "Report not found.",
     "القسم غير موجود.": "Section not found.",
     "حدث خطأ غير متوقع.": "An unexpected error occurred.",
+    # accounts
+    "البريد الإلكتروني أو كلمة المرور غير صحيحة.": "Incorrect email or password.",
+    "هذا البريد الإلكتروني مسجل مسبقاً. سجّل الدخول بدلاً من ذلك.":
+        "This email is already registered. Please log in instead.",
+    "يرجى تسجيل الدخول أولاً.": "Please log in first.",
+    "انتهت صلاحية الصفحة. يرجى تحديثها ثم المحاولة مرة أخرى.":
+        "This page has expired. Please refresh it and try again.",
     # LLM (shared)
     "انتهت مهلة الاتصال بخدمة الذكاء الاصطناعي.": "The connection to the AI service timed out.",
     "تعذر الاتصال بخدمة الذكاء الاصطناعي.": "Could not connect to the AI service.",

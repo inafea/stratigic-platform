@@ -17,7 +17,7 @@ def user_messages() -> set[str]:
     """Arabic strings passed to HTTPException/LLMError/sse errors in the backend code."""
     found = set()
     root = Path(__file__).resolve().parents[1]
-    for path in [root / "main.py", *(root / "llm").glob("*.py")]:
+    for path in [root / "main.py", root / "auth.py", *(root / "llm").glob("*.py")]:
         if path.name == "fake.py":
             continue
         for line in path.read_text(encoding="utf-8").splitlines():
@@ -67,7 +67,7 @@ def test_stream_error_translated(client):
 
 
 def test_rate_limit_in_english(client, monkeypatch):
-    from backend import main
+    from backend import ratelimit as main
     settings = main.get_settings().model_copy(update={"rate_limit": "1/minute"})
     monkeypatch.setattr(main, "get_settings", lambda: settings)
     client.post("/api/clarify", json=IDEA, headers=EN)

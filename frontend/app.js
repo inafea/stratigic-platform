@@ -238,9 +238,19 @@ function toggleTheme() {
 }
 
 // ---------- API ----------
+/** Value of the CSRF cookie, echoed in a header on every request (double-submit protection). */
+function csrfToken() {
+    const m = document.cookie.match(/(?:^|;\s*)mustashar_csrf=([^;]+)/);
+    return m ? decodeURIComponent(m[1]) : "";
+}
+
+function apiHeaders() {
+    return { "Content-Type": "application/json", "X-Lang": state.lang, "X-CSRF-Token": csrfToken() };
+}
+
 async function api(path, options = {}) {
     const res = await fetch(path, {
-        headers: { "Content-Type": "application/json", "X-Lang": state.lang },
+        headers: apiHeaders(),
         ...options,
     });
     if (!res.ok) throw new Error(await errorMessage(res));
@@ -260,7 +270,7 @@ async function errorMessage(res) {
 async function streamSSE(path, body, onEvent) {
     const res = await fetch(path, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "X-Lang": state.lang },
+        headers: apiHeaders(),
         body: JSON.stringify(body),
     });
     if (!res.ok) throw new Error(await errorMessage(res));

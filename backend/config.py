@@ -23,6 +23,11 @@ class Settings(BaseSettings):
 
     # limits apply per client IP to endpoints that call the LLM
     rate_limit: str = "10/minute"
+    auth_rate_limit: str = "10/minute"
+
+    # accounts
+    session_days: int = 30
+    cookie_secure: bool = False  # set true in production (HTTPS)
     log_level: str = "INFO"
 
 
