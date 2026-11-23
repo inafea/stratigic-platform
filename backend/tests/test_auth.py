@@ -1,3 +1,4 @@
+import pytest
 from datetime import UTC, datetime, timedelta
 
 from fastapi.testclient import TestClient
@@ -5,6 +6,12 @@ from sqlmodel import Session, select
 
 from backend import auth, db
 from backend.main import app
+
+
+@pytest.fixture
+def client(anon_client):
+    """These tests start logged out."""
+    return anon_client
 
 USER = {"email": "Sara@Example.com", "password": "correct horse 1", "name": "سارة"}
 

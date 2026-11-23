@@ -10,6 +10,12 @@ from sqlmodel import Session, select
 from backend import auth, db, google_auth
 from backend.main import app
 
+
+@pytest.fixture
+def client(anon_client):
+    """These tests start logged out."""
+    return anon_client
+
 CLIENT_ID = "test-client.apps.googleusercontent.com"
 
 

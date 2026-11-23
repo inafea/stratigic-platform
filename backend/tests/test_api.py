@@ -53,8 +53,8 @@ def test_missing_api_key_returns_503(monkeypatch):
     from backend import main
     monkeypatch.setattr(main, "get_settings", lambda: type("S", (), {"llm_api_key": "", "llm_provider": "github"})())
     app.dependency_overrides.clear()
-    from backend.tests.conftest import with_csrf
-    r = with_csrf(TestClient(app)).post("/api/clarify", json=IDEA)
+    from backend.tests.conftest import login_new_user, with_csrf
+    r = login_new_user(with_csrf(TestClient(app))).post("/api/clarify", json=IDEA)
     assert r.status_code == 503
 
 

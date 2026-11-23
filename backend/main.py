@@ -128,19 +128,21 @@ def _request_of(r: db.Report) -> AnalysisRequest:
 
 @app.post("/api/clarify")
 @llm_limit
-async def clarify(request: Request, data: IdeaInput, analyzer: Analyzer = Depends(get_analyzer)):
+async def clarify(request: Request, data: IdeaInput, user: db.User = Depends(auth.current_user),
+                  analyzer: Analyzer = Depends(get_analyzer)):
     return {"questions": await analyzer.clarify(data)}
 
 
 @app.post("/api/analyze")
 @llm_limit
-async def analyze(request: Request, req: AnalysisRequest, analyzer: Analyzer = Depends(get_analyzer)):
+async def analyze(request: Request, req: AnalysisRequest, user: db.User = Depends(auth.current_user),
+                  analyzer: Analyzer = Depends(get_analyzer)):
     """Stream the report as server-sent events: `report` (id), `section` per section, then `done` or `error`.
 
     The report is saved as it is generated, so a partial report survives an error.
     """
     with Session(db.get_engine()) as s:
-        report = db.Report(idea=req.idea, goals=req.goals, industry=req.industry, strategy=req.strategy,
+        report = db.Report(user_id=user.id, idea=req.idea, goals=req.goals, industry=req.industry, strategy=req.strategy,
                            language=req.language, answers=[a.model_dump() for a in req.answers])
         s.add(report)
         s.commit()
@@ -170,16 +172,19 @@ async def analyze(request: Request, req: AnalysisRequest, analyzer: Analyzer = D
 
 # ---- saved reports -------------------------------------------------------------------
 
-def _get_report(session: Session, report_id: int) -> db.Report:
+def _get_report(session: Session, report_id: int, user: db.User) -> db.Report:
+    """The user's own report; someone else's report is reported as missing (404, not 403),
+    so report ids can't be probed."""
     report = session.get(db.Report, report_id)
-    if report is None:
+    if report is None or report.user_id != user.id:
         raise HTTPException(404, "التقرير غير موجود.")
     return report
 
 
 @app.get("/api/reports")
-async def list_reports(session: Session = Depends(db.get_session)):
-    rows = session.exec(select(db.Report).order_by(db.Report.id.desc()).limit(100))
+async def list_reports(user: db.User = Depends(auth.current_user), session: Session = Depends(db.get_session)):
+    rows = session.exec(select(db.Report).where(db.Report.user_id == user.id)
+                        .order_by(db.Report.id.desc()).limit(100))
     return [
         {
             "id": r.id,
@@ -193,8 +198,8 @@ async def list_reports(session: Session = Depends(db.get_session)):
 
 
 @app.get("/api/reports/{report_id}")
-async def get_report(report_id: int, session: Session = Depends(db.get_session)):
-    r = _get_report(session, report_id)
+async def get_report(report_id: int, user: db.User = Depends(auth.current_user), session: Session = Depends(db.get_session)):
+    r = _get_report(session, report_id, user)
     return {
         "id": r.id,
         "created_at": r.created_at.isoformat(),
@@ -213,8 +218,8 @@ async def get_report(report_id: int, session: Session = Depends(db.get_session))
 
 
 @app.delete("/api/reports/{report_id}", status_code=204)
-async def delete_report(report_id: int, session: Session = Depends(db.get_session)):
-    r = _get_report(session, report_id)
+async def delete_report(report_id: int, user: db.User = Depends(auth.current_user), session: Session = Depends(db.get_session)):
+    r = _get_report(session, report_id, user)
     for m in db.list_messages(session, r.id):
         session.delete(m)
     session.delete(r)
@@ -228,12 +233,13 @@ async def regenerate_section(
     report_id: int,
     key: str,
     body: RegenerateRequest,
+    user: db.User = Depends(auth.current_user),
     analyzer: Analyzer = Depends(get_analyzer),
     session: Session = Depends(db.get_session),
 ):
     if key not in SECTIONS:
         raise HTTPException(404, "القسم غير موجود.")
-    r = _get_report(session, report_id)
+    r = _get_report(session, report_id, user)
     req = _request_of(r)
     data = await analyzer.regenerate_section(req, key, r.sections, body.instructions)
     db.save_section(report_id, key, data)
@@ -246,11 +252,12 @@ async def chat(
     request: Request,
     report_id: int,
     body: ChatRequest,
+    user: db.User = Depends(auth.current_user),
     analyzer: Analyzer = Depends(get_analyzer),
     session: Session = Depends(db.get_session),
 ):
     """Stream a follow-up answer as SSE `delta` events, then `done`. Both messages are saved."""
-    r = _get_report(session, report_id)
+    r = _get_report(session, report_id, user)
     req = _request_of(r)
     sections = dict(r.sections)
     history = [(m.role, m.content) for m in db.list_messages(session, report_id)][-10:]

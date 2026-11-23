@@ -33,13 +33,29 @@ def reset_rate_limits():
     yield
 
 
+TEST_USER = {"email": "tester@example.com", "password": "tester-password-1", "name": "Tester"}
+
+
 @pytest.fixture
-def client(fake_llm):
+def anon_client(fake_llm):
+    """A browser with a CSRF token but nobody logged in."""
     app.dependency_overrides[get_analyzer] = lambda: Analyzer(fake_llm)
     with TestClient(app) as c:
         with_csrf(c)
         yield c
     app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def client(anon_client):
+    """A browser logged in as TEST_USER."""
+    return login_new_user(anon_client)
+
+
+def login_new_user(c: TestClient, **user) -> TestClient:
+    r = c.post("/api/auth/register", json={**TEST_USER, **user})
+    assert r.status_code == 201, r.text
+    return c
 
 
 def with_csrf(c: TestClient) -> TestClient:

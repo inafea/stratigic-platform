@@ -92,7 +92,7 @@ A rule-based scorer maps the answers to a plan, shows **why** ("You expect aroun
 | [x] P2 | Register, login and logout with argon2, HttpOnly session cookie and CSRF; `current_user` dependency | Tests: register → login → `/api/me` → logout |
 | [x] P3 | Email verification and password reset (Mailer interface, console mailer in development) | Tests with the console mailer pass |
 | [x] P4 | Google sign-in (OIDC with PKCE, built on httpx instead of authlib) and account linking by verified email | Login works with a test Google client; mocked flow tested |
-| [ ] P5 | Reports are owned by a user: all report routes filtered by user; 401 when logged out | User A cannot read or delete user B's report (test) |
+| [x] P5 | Reports are owned by a user: all report routes filtered by user; 401 when logged out | User A cannot read or delete user B's report (test) |
 | [ ] P6 | Frontend: login, register, reset and verify views, user menu, hash routing, translations | Full sign-up flow works in the browser in AR and EN, light and dark |
 
 **Step B: Plans and limits**

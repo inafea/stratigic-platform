@@ -8,6 +8,12 @@ from backend import auth, db
 from backend.mailer import ConsoleMailer, get_mailer
 from backend.main import app
 
+
+@pytest.fixture
+def client(anon_client):
+    """These tests start logged out."""
+    return anon_client
+
 USER = {"email": "sara@example.com", "password": "correct horse 1", "name": "Sara", "language": "en"}
 NEW_PASSWORD = "a brand new pass 2"
 
