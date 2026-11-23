@@ -59,7 +59,7 @@ frontend/
 ## Task list (one task = one commit on `enhancement`)
 | # | Task | Done when |
 |---|---|---|
-| [ ] T1 | Project skeleton: `backend/`, `frontend/`, `.gitignore`, `.env.example`, pinned `requirements.txt`; remove old files | `pip install -r requirements.txt` works |
+| [x] T1 | Project skeleton: `backend/`, `frontend/`, `.gitignore`, `.env.example`, pinned `requirements.txt`; remove old files | `pip install -r requirements.txt` works |
 | [ ] T2 | `config.py` (pydantic-settings) | Settings load from `.env` |
 | [ ] T3 | `llm/client.py`: GitHub Models provider, timeout, retries, `complete_json` | Unit test with mocked HTTP passes |
 | [ ] T4 | Streaming support in the client (`stream`) | Mocked stream test passes |
