@@ -64,7 +64,7 @@ frontend/
 | [x] T3 | `llm/client.py`: GitHub Models provider, timeout, retries, `complete_json` | Unit test with mocked HTTP passes |
 | [x] T4 | Streaming support in the client (`stream`) | Mocked stream test passes |
 | [x] T5 | `schemas.py`: StrategyReport + section models | Schema tests pass |
-| [ ] T6 | `prompts/strategy_ar.md` (system prompt) + prompt loader | Prompt renders with idea/goals |
+| [x] T6 | `prompts/strategy_ar.md` (system prompt) + prompt loader | Prompt renders with idea/goals |
 | [ ] T7 | `services/analyzer.py`: `clarify()` | Returns 3–5 questions (mocked) |
 | [ ] T8 | `services/analyzer.py`: `analyze()` section by section, yielding each section | Yields all sections (mocked) |
 | [ ] T9 | FastAPI `main.py`: `/api/clarify`, `/api/analyze` (SSE), input validation, error handling | Requests to both endpoints succeed |
