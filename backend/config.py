@@ -17,6 +17,10 @@ class Settings(BaseSettings):
 
     database_url: str = "sqlite:///./mustashar.db"
 
+    # limits apply per client IP to endpoints that call the LLM
+    rate_limit: str = "10/minute"
+    log_level: str = "INFO"
+
 
 @lru_cache
 def get_settings() -> Settings:

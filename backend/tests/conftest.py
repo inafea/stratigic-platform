@@ -7,7 +7,7 @@ from sqlmodel import create_engine
 
 from backend import db
 
-from backend.main import app, get_analyzer
+from backend.main import app, get_analyzer, limiter
 from backend.services.analyzer import Analyzer
 from backend.tests.fakes import FakeLLM
 
@@ -24,6 +24,12 @@ def memory_db():
 @pytest.fixture
 def fake_llm():
     return FakeLLM()
+
+
+@pytest.fixture(autouse=True)
+def reset_rate_limits():
+    limiter.reset()
+    yield
 
 
 @pytest.fixture

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import logging
+import time
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -10,6 +11,9 @@ from pathlib import Path
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
+from slowapi import Limiter
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 
 from sqlmodel import Session, select
 
@@ -19,7 +23,7 @@ from backend.llm.client import LLMClient, LLMError
 from backend.schemas import SECTIONS, AnalysisRequest, ChatRequest, IdeaInput, RegenerateRequest
 from backend.services.analyzer import Analyzer
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+logging.basicConfig(level=get_settings().log_level, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 log = logging.getLogger("mustashar")
 
 FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
@@ -33,6 +37,25 @@ async def lifespan(_app: FastAPI):
 
 
 app = FastAPI(title="Mustashar — مستشار", version="0.1.0", lifespan=lifespan)
+
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+llm_limit = limiter.limit(lambda: get_settings().rate_limit)
+
+
+@app.exception_handler(RateLimitExceeded)
+async def rate_limit_handler(_req: Request, _exc: RateLimitExceeded):
+    return JSONResponse(status_code=429, content={"detail": "عدد كبير من الطلبات. يرجى الانتظار قليلاً ثم المحاولة."})
+
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start = time.perf_counter()
+    response = await call_next(request)
+    if request.url.path.startswith("/api/"):
+        log.info("%s %s -> %s (%.0f ms)", request.method, request.url.path, response.status_code,
+                 (time.perf_counter() - start) * 1000)
+    return response
 
 
 # ---- dependencies --------------------------------------------------------------
@@ -64,12 +87,14 @@ async def health():
 
 
 @app.post("/api/clarify")
-async def clarify(data: IdeaInput, analyzer: Analyzer = Depends(get_analyzer)):
+@llm_limit
+async def clarify(request: Request, data: IdeaInput, analyzer: Analyzer = Depends(get_analyzer)):
     return {"questions": await analyzer.clarify(data)}
 
 
 @app.post("/api/analyze")
-async def analyze(req: AnalysisRequest, analyzer: Analyzer = Depends(get_analyzer)):
+@llm_limit
+async def analyze(request: Request, req: AnalysisRequest, analyzer: Analyzer = Depends(get_analyzer)):
     """Stream the report as server-sent events: `report` (id), `section` per section, then `done` or `error`.
 
     The report is saved as it is generated, so a partial report survives an error.
@@ -152,7 +177,9 @@ async def delete_report(report_id: int, session: Session = Depends(db.get_sessio
 
 
 @app.post("/api/reports/{report_id}/sections/{key}/regenerate")
+@llm_limit
 async def regenerate_section(
+    request: Request,
     report_id: int,
     key: str,
     body: RegenerateRequest,
@@ -169,7 +196,9 @@ async def regenerate_section(
 
 
 @app.post("/api/reports/{report_id}/chat")
+@llm_limit
 async def chat(
+    request: Request,
     report_id: int,
     body: ChatRequest,
     analyzer: Analyzer = Depends(get_analyzer),
