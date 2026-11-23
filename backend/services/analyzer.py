@@ -17,7 +17,7 @@ class Analyzer:
 
     async def clarify(self, data: IdeaInput) -> list[str]:
         """Return 3-5 clarifying questions for the idea."""
-        result = await self.llm.complete_json(prompts.clarify_system(), prompts.idea_message(data), ClarifyingQuestions)
+        result = await self.llm.complete_json(prompts.clarify_system(data), prompts.idea_message(data), ClarifyingQuestions)
         return [q.strip() for q in result.questions if q.strip()][:5]
 
     async def generate_section(
@@ -25,7 +25,7 @@ class Analyzer:
     ) -> dict:
         model, _title = SECTIONS[key]
         result = await self.llm.complete_json(
-            prompts.strategy_system(), prompts.section_message(req, key, context or None, instructions), model
+            prompts.strategy_system(req), prompts.section_message(req, key, context or None, instructions), model
         )
         return result.model_dump()
 
@@ -40,7 +40,7 @@ class Analyzer:
         self, req: IdeaInput, sections: dict[str, dict], history: list[tuple[str, str]], question: str
     ) -> AsyncIterator[str]:
         """Stream an answer to a follow-up question about the report."""
-        async for chunk in self.llm.stream(prompts.chat_system(sections), prompts.chat_message(req, history, question)):
+        async for chunk in self.llm.stream(prompts.chat_system(sections, req), prompts.chat_message(req, history, question)):
             yield chunk
 
     async def analyze(self, req: AnalysisRequest) -> AsyncIterator[tuple[str, dict]]:

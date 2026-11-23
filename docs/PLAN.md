@@ -90,3 +90,4 @@ frontend/
 ## Added after the original plan
 - [x] Claude provider (`LLM_PROVIDER=anthropic`) via the official Anthropic SDK — structured outputs, streaming, server-side refusal fallbacks.
 - [x] Non-JSON responses from the LLM endpoint are reported as a clear Arabic error (seen behind a network proxy).
+- [x] Specialized consultant templates: 8 industry templates (`backend/prompts/industries/`) and 6 strategy-type templates (`backend/prompts/strategies/`), chosen in the form or left on automatic; saved with each report and used for questions, sections, regeneration and chat.

@@ -32,6 +32,8 @@ function renderMarkdown(text) {
 const state = {
     idea: "",
     goals: "",
+    industry: "auto",
+    strategy: "auto",
     questions: [],
     reportId: null,
     busy: false,
@@ -223,6 +225,8 @@ async function loadReport(id) {
         state.reportId = r.id;
         state.idea = r.idea;
         state.goals = r.goals;
+        state.industry = r.industry;
+        state.strategy = r.strategy;
         openReportView(r.idea, r.created_at);
         r.sections.forEach(putSection);
         setProgress(TOTAL_SECTIONS);
@@ -241,12 +245,14 @@ $("ideaForm").addEventListener("submit", async (e) => {
     showAlert("");
     state.idea = $("idea").value.trim();
     state.goals = $("goals").value.trim();
+    state.industry = $("industry").value;
+    state.strategy = $("strategy").value;
     setBusy(true);
     setLoading(true, "جاري إعداد أسئلة توضيحية...");
     try {
         const { questions } = await api("/api/clarify", {
             method: "POST",
-            body: JSON.stringify({ idea: state.idea, goals: state.goals }),
+            body: JSON.stringify(ideaPayload()),
         });
         state.questions = questions;
         $("questionsList").replaceChildren(...questions.map((q, i) =>
@@ -268,7 +274,7 @@ $("questionsForm").addEventListener("submit", async (e) => {
     const answers = state.questions
         .map((question, i) => ({ question, answer: $(`q${i}`).value.trim() }))
         .filter((a) => a.answer);
-    await runAnalysis({ idea: state.idea, goals: state.goals, answers });
+    await runAnalysis({ ...ideaPayload(), answers });
 });
 
 async function runAnalysis(payload) {
@@ -406,4 +412,20 @@ function resetToNew() {
 $("newBtn").addEventListener("click", resetToNew);
 $("printBtn").addEventListener("click", () => window.print());
 
+function ideaPayload() {
+    return { idea: state.idea, goals: state.goals, industry: state.industry, strategy: state.strategy };
+}
+
+async function loadTemplates() {
+    try {
+        const t = await api("/api/templates");
+        for (const [id, items] of [["industry", t.industries], ["strategy", t.strategies]]) {
+            $(id).append(...items.map((i) => el("option", { value: i.key }, i.label)));
+        }
+    } catch {
+        // keep "auto" only; the analysis still works
+    }
+}
+
+loadTemplates();
 refreshHistory();

@@ -8,7 +8,7 @@ import json
 from functools import cache
 from pathlib import Path
 
-from backend.schemas import SECTIONS, AnalysisRequest, IdeaInput
+from backend.schemas import INDUSTRIES, SECTIONS, STRATEGIES, AnalysisRequest, IdeaInput
 
 PROMPTS_DIR = Path(__file__).parent
 
@@ -48,9 +48,9 @@ def section_message(
     return msg
 
 
-def chat_system(report_sections: dict[str, dict]) -> str:
+def chat_system(report_sections: dict[str, dict], data: IdeaInput | None = None) -> str:
     report_json = json.dumps(report_sections, ensure_ascii=False)
-    return strategy_system() + "\n\n" + render(load("chat_ar"), report=report_json)
+    return strategy_system(data) + "\n\n" + render(load("chat_ar"), report=report_json)
 
 
 def chat_message(req: IdeaInput, history: list[tuple[str, str]], question: str) -> str:
@@ -62,9 +62,26 @@ def chat_message(req: IdeaInput, history: list[tuple[str, str]], question: str) 
     return "\n\n".join(parts)
 
 
-def strategy_system() -> str:
-    return load("strategy_ar")
+def specialization(data: IdeaInput | None) -> str:
+    """Industry and strategy-type templates chosen for this idea ("auto" adds nothing)."""
+    parts = []
+    industry = getattr(data, "industry", "auto")
+    strategy = getattr(data, "strategy", "auto")
+    if industry in INDUSTRIES:
+        parts.append(load(f"industries/{industry}"))
+    if strategy in STRATEGIES:
+        parts.append(load(f"strategies/{strategy}"))
+    return "\n\n".join(parts)
 
 
-def clarify_system() -> str:
-    return load("clarify_ar")
+def _with_specialization(base: str, data: IdeaInput | None) -> str:
+    extra = specialization(data)
+    return f"{base}\n\n{extra}" if extra else base
+
+
+def strategy_system(data: IdeaInput | None = None) -> str:
+    return _with_specialization(load("strategy_ar"), data)
+
+
+def clarify_system(data: IdeaInput | None = None) -> str:
+    return _with_specialization(load("clarify_ar"), data)

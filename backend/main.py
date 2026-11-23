@@ -20,7 +20,15 @@ from sqlmodel import Session, select
 from backend import db
 from backend.config import get_settings
 from backend.llm.client import LLMClient, LLMError
-from backend.schemas import SECTIONS, AnalysisRequest, ChatRequest, IdeaInput, RegenerateRequest
+from backend.schemas import (
+    INDUSTRIES,
+    SECTIONS,
+    STRATEGIES,
+    AnalysisRequest,
+    ChatRequest,
+    IdeaInput,
+    RegenerateRequest,
+)
 from backend.services.analyzer import Analyzer
 
 logging.basicConfig(level=get_settings().log_level, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -92,6 +100,21 @@ async def health():
     return {"status": "ok"}
 
 
+@app.get("/api/templates")
+async def templates():
+    """Industry and strategy-type templates the form can offer."""
+    return {
+        "industries": [{"key": k, "label": v} for k, v in INDUSTRIES.items()],
+        "strategies": [{"key": k, "label": v} for k, v in STRATEGIES.items()],
+    }
+
+
+def _request_of(r: db.Report) -> AnalysisRequest:
+    return AnalysisRequest.model_validate(
+        {"idea": r.idea, "goals": r.goals, "industry": r.industry, "strategy": r.strategy, "answers": r.answers}
+    )
+
+
 @app.post("/api/clarify")
 @llm_limit
 async def clarify(request: Request, data: IdeaInput, analyzer: Analyzer = Depends(get_analyzer)):
@@ -106,7 +129,7 @@ async def analyze(request: Request, req: AnalysisRequest, analyzer: Analyzer = D
     The report is saved as it is generated, so a partial report survives an error.
     """
     with Session(db.get_engine()) as s:
-        report = db.Report(idea=req.idea, goals=req.goals, answers=[a.model_dump() for a in req.answers])
+        report = db.Report(idea=req.idea, goals=req.goals, industry=req.industry, strategy=req.strategy, answers=[a.model_dump() for a in req.answers])
         s.add(report)
         s.commit()
         report_id = report.id
@@ -164,6 +187,8 @@ async def get_report(report_id: int, session: Session = Depends(db.get_session))
         "created_at": r.created_at.isoformat(),
         "idea": r.idea,
         "goals": r.goals,
+        "industry": r.industry,
+        "strategy": r.strategy,
         "answers": r.answers,
         "status": r.status,
         "sections": [
@@ -195,7 +220,7 @@ async def regenerate_section(
     if key not in SECTIONS:
         raise HTTPException(404, "القسم غير موجود.")
     r = _get_report(session, report_id)
-    req = AnalysisRequest.model_validate({"idea": r.idea, "goals": r.goals, "answers": r.answers})
+    req = _request_of(r)
     data = await analyzer.regenerate_section(req, key, r.sections, body.instructions)
     db.save_section(report_id, key, data)
     return {"key": key, "title": SECTIONS[key][1], "data": data}
@@ -212,7 +237,7 @@ async def chat(
 ):
     """Stream a follow-up answer as SSE `delta` events, then `done`. Both messages are saved."""
     r = _get_report(session, report_id)
-    req = AnalysisRequest.model_validate({"idea": r.idea, "goals": r.goals, "answers": r.answers})
+    req = _request_of(r)
     sections = dict(r.sections)
     history = [(m.role, m.content) for m in db.list_messages(session, report_id)][-10:]
     session.add(db.Message(report_id=report_id, role="user", content=body.message))

@@ -10,9 +10,36 @@ from pydantic import BaseModel, Field
 
 # ---- requests --------------------------------------------------------------
 
+INDUSTRIES: dict[str, str] = {
+    "restaurant": "المطاعم والأغذية",
+    "ecommerce": "التجارة الإلكترونية",
+    "saas": "البرمجيات والتطبيقات (SaaS)",
+    "retail": "تجارة التجزئة",
+    "real_estate": "العقارات",
+    "education": "التعليم والتدريب",
+    "healthcare": "الصحة واللياقة",
+    "services": "الخدمات المهنية والاستشارية",
+}
+
+STRATEGIES: dict[str, str] = {
+    "new_business": "إطلاق مشروع جديد",
+    "expansion": "توسع مشروع قائم",
+    "market_entry": "دخول سوق جديد",
+    "product_launch": "إطلاق منتج جديد",
+    "turnaround": "إنقاذ مشروع متعثر",
+    "funding": "التحضير للتمويل",
+}
+
+Industry = Literal["auto", "restaurant", "ecommerce", "saas", "retail", "real_estate", "education", "healthcare",
+                   "services"]
+StrategyType = Literal["auto", "new_business", "expansion", "market_entry", "product_launch", "turnaround", "funding"]
+
+
 class IdeaInput(BaseModel):
     idea: str = Field(min_length=10, max_length=4000)
     goals: str = Field(min_length=5, max_length=2000)
+    industry: Industry = "auto"
+    strategy: StrategyType = "auto"
 
 
 class ClarifyingQuestions(BaseModel):

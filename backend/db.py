@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from sqlalchemy import JSON, Column
+from sqlalchemy import JSON, Column, inspect, text
 from sqlalchemy.engine import Engine
 from sqlmodel import Field, Session, SQLModel, create_engine, select
 
@@ -19,6 +19,8 @@ class Report(SQLModel, table=True):
     created_at: datetime = Field(default_factory=_now)
     idea: str
     goals: str
+    industry: str = "auto"
+    strategy: str = "auto"
     answers: list = Field(default_factory=list, sa_column=Column(JSON))
     sections: dict = Field(default_factory=dict, sa_column=Column(JSON))
     status: str = "running"  # running | done | error
@@ -51,7 +53,18 @@ def set_engine(engine: Engine) -> None:
 
 
 def init_db() -> None:
-    SQLModel.metadata.create_all(get_engine())
+    engine = get_engine()
+    SQLModel.metadata.create_all(engine)
+    _add_missing_columns(engine)
+
+
+def _add_missing_columns(engine: Engine) -> None:
+    """Add columns introduced after a database was created (no migration tool for SQLite here)."""
+    existing = {c["name"] for c in inspect(engine).get_columns("report")}
+    with engine.begin() as conn:
+        for name in ("industry", "strategy"):
+            if name not in existing:
+                conn.execute(text(f"ALTER TABLE report ADD COLUMN {name} VARCHAR NOT NULL DEFAULT 'auto'"))
 
 
 def get_session():
