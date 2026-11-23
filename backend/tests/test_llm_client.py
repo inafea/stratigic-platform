@@ -109,3 +109,29 @@ async def test_timeout_is_retried():
         return ok("ok")
 
     assert await make_client(handler).complete("s", "u") == "ok"
+
+
+def sse(*deltas: str, done: bool = True) -> bytes:
+    lines = [": keep-alive", ""]
+    for d in deltas:
+        lines.append("data: " + json.dumps({"choices": [{"delta": {"content": d}}]}, ensure_ascii=False))
+        lines.append("")
+    lines.append("data: {not json}")
+    if done:
+        lines.append("data: [DONE]")
+    return ("\n".join(lines) + "\n").encode("utf-8")
+
+
+async def test_stream_yields_deltas():
+    def handler(req):
+        assert json.loads(req.content)["stream"] is True
+        return httpx.Response(200, content=sse("تحليل", " ", "السوق"))
+
+    parts = [p async for p in make_client(handler).stream("s", "u")]
+    assert parts == ["تحليل", " ", "السوق"]
+
+
+async def test_stream_error_status():
+    with pytest.raises(LLMError) as e:
+        [p async for p in make_client(lambda r: httpx.Response(401)).stream("s", "u")]
+    assert e.value.status == 401

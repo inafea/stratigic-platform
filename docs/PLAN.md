@@ -62,7 +62,7 @@ frontend/
 | [x] T1 | Project skeleton: `backend/`, `frontend/`, `.gitignore`, `.env.example`, pinned `requirements.txt`; remove old files | `pip install -r requirements.txt` works |
 | [x] T2 | `config.py` (pydantic-settings) | Settings load from `.env` |
 | [x] T3 | `llm/client.py`: GitHub Models provider, timeout, retries, `complete_json` | Unit test with mocked HTTP passes |
-| [ ] T4 | Streaming support in the client (`stream`) | Mocked stream test passes |
+| [x] T4 | Streaming support in the client (`stream`) | Mocked stream test passes |
 | [ ] T5 | `schemas.py`: StrategyReport + section models | Schema tests pass |
 | [ ] T6 | `prompts/strategy_ar.md` (system prompt) + prompt loader | Prompt renders with idea/goals |
 | [ ] T7 | `services/analyzer.py`: `clarify()` | Returns 3–5 questions (mocked) |

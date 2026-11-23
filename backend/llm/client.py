@@ -4,6 +4,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+from collections.abc import AsyncIterator
 from typing import TypeVar
 
 import httpx
@@ -93,6 +94,34 @@ class LLMClient:
             return data["choices"][0]["message"]["content"]
         except (KeyError, IndexError, TypeError) as e:
             raise LLMError(f"malformed response: {data}", "استجابة غير متوقعة من خدمة الذكاء الاصطناعي.") from e
+
+    async def stream(self, system: str, user: str) -> AsyncIterator[str]:
+        """Yield text deltas as they arrive (server-sent events). No retries once streaming starts."""
+        payload = self._payload(system, user, stream=True)
+        async with self._http() as http:
+            try:
+                async with http.stream("POST", "/chat/completions", json=payload) as resp:
+                    if resp.status_code != 200:
+                        body = (await resp.aread()).decode("utf-8", "replace")[:500]
+                        raise self._error_for_status(resp.status_code, body)
+                    async for line in resp.aiter_lines():
+                        if not line.startswith("data:"):
+                            continue
+                        data = line[5:].strip()
+                        if data == "[DONE]":
+                            return
+                        try:
+                            chunk = json.loads(data)
+                            delta = chunk["choices"][0]["delta"].get("content")
+                        except (json.JSONDecodeError, KeyError, IndexError, TypeError):
+                            log.debug("skipping unparsable stream chunk: %r", data)
+                            continue
+                        if delta:
+                            yield delta
+            except httpx.TimeoutException as e:
+                raise LLMError(f"timeout: {e}", "انتهت مهلة الاتصال بخدمة الذكاء الاصطناعي.") from e
+            except httpx.HTTPError as e:
+                raise LLMError(f"network error: {e}", "تعذر الاتصال بخدمة الذكاء الاصطناعي.") from e
 
     async def complete_json(self, system: str, user: str, schema: type[T]) -> T:
         """Ask for a JSON object matching `schema` and validate it."""
