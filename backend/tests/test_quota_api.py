@@ -207,3 +207,40 @@ def test_real_factory_builds_tier_models(monkeypatch):
     assert analyzer.for_tier("lite").llm.settings.llm_model == "m-lite"
     assert analyzer.for_tier("premium").llm.settings.llm_model == "m-premium"
     assert analyzer.for_tier("standard").llm.settings.llm_model == "m-base"
+
+
+# ---- what a report tells the UI (P10) -------------------------------------------------------------
+
+def test_free_report_terms(client):
+    rid = analyze(client)[0][1]["id"]
+    client.post(f"/api/reports/{rid}/chat", json={"message": "سؤال"})
+    r = client.get(f"/api/reports/{rid}").json()
+    assert r["plan_key"] == "free"
+    assert r["features"]["watermark"] is True and r["features"]["regenerate"] is False
+    assert r["chat"] == {"used": 1, "limit": 5}
+
+
+def test_pro_report_terms(pro_client):
+    rid = analyze(pro_client)[0][1]["id"]
+    r = pro_client.get(f"/api/reports/{rid}").json()
+    assert r["plan_key"] == "pro"
+    assert r["features"]["watermark"] is False and r["features"]["regenerate"] is True
+    assert r["chat"]["limit"] is None
+
+
+def test_upgrade_removes_watermark_from_old_reports(client, memory_db):
+    rid = analyze(client)[0][1]["id"]
+    give_plan(memory_db, TEST_USER["email"], "entrepreneur")
+    r = client.get(f"/api/reports/{rid}").json()
+    assert r["features"]["watermark"] is False and r["chat"]["limit"] == 30
+
+
+def test_plan_tells_ui_about_next_report(client, memory_db):
+    plan = client.get("/api/me/plan").json()
+    assert plan["next_report_features"]["templates"] is False
+    analyze(client)
+    analyze(client)
+    buy_pack(memory_db)
+    plan = client.get("/api/me/plan").json()
+    assert plan["reports_left"] == 0 and plan["pack_credits"] == 1 and plan["can_start_report"] is True
+    assert plan["next_report_features"]["templates"] is True  # the pack unlocks them

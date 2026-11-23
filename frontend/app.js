@@ -109,6 +109,11 @@ const I18N = {
         welcomeTitle: (n) => n ? `أهلاً ${n}!` : "أهلاً بك!",
         welcomeLead: "حسابك جاهز. ابدأ بتحليل فكرتك الأولى، وسنساعدك قريباً في اختيار الباقة الأنسب لك.",
         startFirst: "ابدأ التحليل الأول",
+        // plan limits
+        templatesLocked: "🔒 القوالب المتخصصة متاحة في الباقات المدفوعة.",
+        regenLocked: "إعادة توليد الأقسام غير متاحة في باقتك الحالية. قم بالترقية لاستخدامها.",
+        watermarkText: "مستشار — الباقة المجانية",
+        chatLeft: (left, limit) => `تبقّى لك ${left} من ${limit} أسئلة متابعة لهذا التقرير.`,
         // accounts
         logout: "تسجيل الخروج",
         loginTitle: "تسجيل الدخول", loginLead: "مرحباً بعودتك إلى مستشار.",
@@ -208,6 +213,10 @@ const I18N = {
         welcomeTitle: (n) => n ? `Welcome, ${n}!` : "Welcome!",
         welcomeLead: "Your account is ready. Start with your first analysis; soon we'll also help you pick the plan that fits you best.",
         startFirst: "Start your first analysis",
+        templatesLocked: "🔒 Specialized templates are part of the paid plans.",
+        regenLocked: "Regenerating sections isn't included in your current plan. Upgrade to use it.",
+        watermarkText: "Mustashar — Free plan",
+        chatLeft: (left, limit) => `${left} of ${limit} follow-up questions left for this report.`,
         logout: "Log out",
         loginTitle: "Log in", loginLead: "Welcome back to Mustashar.",
         registerTitle: "Create an account", registerLead: "Create a free account to analyze your ideas and keep your reports.",
@@ -252,6 +261,9 @@ const state = {
     sections: {},  // key -> data for the open report (re-rendered on language change)
     templates: null,
     user: null,   // logged-in user from /api/me, or null
+    plan: null,   // /api/me/plan: usage and what's unlocked
+    reportFeatures: null,          // what the open report allows
+    chat: { used: 0, limit: null }, // follow-up questions on the open report
     busy: false,
 };
 const TOTAL_SECTIONS = 8;
@@ -299,6 +311,7 @@ function applyLanguage() {
     $("langBtn").lang = other;
     fillTemplates();
     rerenderSections();  // button labels follow the UI language
+    renderChatQuota();
     if (!$("authView").hidden) route();  // rebuild the open account screen in the new language
     refreshHistory();
 }
@@ -455,7 +468,10 @@ function sectionCard(key, data) {
     const r = (k) => t(k, state.reportLang);
     const render = renderers[key] || (() => el("pre", {}, JSON.stringify(data, null, 2)));
     const body = el("div", { class: "card-body" }, render(data, r));
-    const regen = el("button", { class: "btn btn-secondary btn-sm no-print", title: t("regenerateTitle"), onclick: () => regenerate(key) }, t("regenerate"));
+    const locked = state.reportFeatures && !state.reportFeatures.regenerate;
+    const regen = locked
+        ? el("button", { class: "btn btn-secondary btn-sm no-print locked", title: t("regenLocked"), onclick: () => showAlert(t("regenLocked")) }, "🔒 " + t("regenerate"))
+        : el("button", { class: "btn btn-secondary btn-sm no-print", title: t("regenerateTitle"), onclick: () => regenerate(key) }, t("regenerate"));
     const card = el("article", { class: `card${key === "summary" ? " summary-card" : ""}`, id: `sec-${key}` });
     if (key === "summary") {
         card.append(...body.childNodes);
@@ -515,6 +531,7 @@ async function loadReport(id) {
         state.industry = r.industry;
         state.strategy = r.strategy;
         openReportView(r.idea, r.created_at, r.language || "ar");
+        applyReportTerms(r);
         r.sections.forEach(putSection);
         setProgress(TOTAL_SECTIONS);
         r.messages.forEach((m) => addMessage(m.role, m.content));
@@ -570,6 +587,7 @@ async function runAnalysis(payload) {
     showAlert("");
     setBusy(true);
     openReportView(payload.idea, new Date().toISOString(), payload.language);
+    applyReportTerms({ features: state.plan?.next_report_features, chat: { used: 0, limit: null } });
     $("chat").hidden = true;
     setProgress(0);
     setLoading(true, t("buildingReport"));
@@ -592,6 +610,8 @@ async function runAnalysis(payload) {
         setProgress(TOTAL_SECTIONS);
         if (count > 0) $("chat").hidden = false;
         refreshHistory();
+        loadPlan();
+        if (state.reportId) api(`/api/reports/${state.reportId}`).then(applyReportTerms).catch(() => {});
     }
 }
 
@@ -635,6 +655,7 @@ $("chatForm").addEventListener("submit", async (e) => {
     if (!message || !state.reportId || state.busy) return;
     $("chatInput").value = "";
     addMessage("user", message);
+    let failed = false;
     const reply = addMessage("assistant", "…");
     let text = "";
     setBusy(true);
@@ -644,10 +665,12 @@ $("chatForm").addEventListener("submit", async (e) => {
                 text += data.text;
                 reply.innerHTML = renderMarkdown(text);
             } else if (event === "error") {
+                failed = true;
                 reply.remove();
                 showAlert(data.message);
             }
         });
+        if (!failed) { state.chat.used++; renderChatQuota(); }
     } catch (err) {
         reply.remove();
         showAlert(err.message);
@@ -755,6 +778,7 @@ async function loadMe() {
         state.user = null;
     }
     renderUserChrome();
+    await loadPlan();
 }
 
 function renderUserChrome() {
@@ -772,6 +796,7 @@ function renderUserChrome() {
 function onLoggedIn(user, next = "") {
     state.user = user;
     renderUserChrome();
+    loadPlan();
     resetToNew();
     refreshHistory();
     go(next);
@@ -779,6 +804,7 @@ function onLoggedIn(user, next = "") {
 
 function onLoggedOut() {
     state.user = null;
+    state.plan = null;
     state.reportId = null;
     state.sections = {};
     $("historyList").replaceChildren();
@@ -931,6 +957,45 @@ $("resendBtn").addEventListener("click", async () => {
 });
 
 window.addEventListener("hashchange", route);
+
+// ---------- plan limits in the UI (the server enforces them too) ----------
+async function loadPlan() {
+    if (!state.user) { state.plan = null; return; }
+    try {
+        state.plan = await api("/api/me/plan");
+    } catch {
+        state.plan = null;
+    }
+    applyPlanLocks();
+}
+
+function applyPlanLocks() {
+    const templatesOk = state.plan?.next_report_features?.templates ?? true;
+    for (const id of ["industry", "strategy"]) {
+        $(id).disabled = !templatesOk;
+        if (!templatesOk) $(id).value = "auto";
+    }
+    $("templatesLock").hidden = templatesOk;
+}
+
+/** Features and chat usage of the open report (from GET /api/reports/{id}). */
+function applyReportTerms(r) {
+    state.reportFeatures = r.features || null;
+    state.chat = { ...(r.chat || { used: 0, limit: null }) };
+    $("watermark").hidden = !state.reportFeatures?.watermark;
+    rerenderSections();
+    renderChatQuota();
+}
+
+function renderChatQuota() {
+    const { used, limit } = state.chat;
+    const q = $("chatQuota");
+    q.hidden = limit == null;
+    if (limit == null) return;
+    const left = Math.max(0, limit - used);
+    q.textContent = t("chatLeft")(left, limit);
+    q.classList.toggle("lock-hint", left === 0);
+}
 
 // ---------- start ----------
 $("newBtn").addEventListener("click", () => { if (parseHash().path) go(""); resetToNew(); });

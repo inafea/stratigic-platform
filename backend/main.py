@@ -254,8 +254,14 @@ async def list_reports(user: db.User = Depends(auth.current_user), session: Sess
 @app.get("/api/reports/{report_id}")
 async def get_report(report_id: int, user: db.User = Depends(auth.current_user), session: Session = Depends(db.get_session)):
     r = _get_report(session, report_id, user)
+    ent = ent_.get_entitlements(session, user)
+    messages = db.list_messages(session, r.id)
     return {
         "id": r.id,
+        "plan_key": r.plan_key,
+        # what this report allows now (more generous of its own terms and the current plan)
+        "features": ent_.report_features(r, ent).model_dump(),
+        "chat": {"used": sum(m.role == "user" for m in messages), "limit": ent_.chat_limit(r, ent)},
         "created_at": r.created_at.isoformat(),
         "idea": r.idea,
         "goals": r.goals,
@@ -267,7 +273,7 @@ async def get_report(report_id: int, user: db.User = Depends(auth.current_user),
         "sections": [
             {"key": k, "title": SECTIONS[k][1], "data": r.sections[k]} for k in SECTIONS if k in r.sections
         ],
-        "messages": [{"role": m.role, "content": m.content} for m in db.list_messages(session, r.id)],
+        "messages": [{"role": m.role, "content": m.content} for m in messages],
     }
 
 

@@ -83,6 +83,7 @@
                         <select id="strategy"><option value="auto">تحديد تلقائي</option></select>
                     </div>
                 </div>
+                <p id="templatesLock" class="field-hint lock-hint" data-i18n="templatesLocked" hidden>🔒 القوالب المتخصصة متاحة في الباقات المدفوعة.</p>
                 <div class="actions">
                     <button type="submit" class="btn btn-primary" id="clarifyBtn" data-i18n="next">التالي ←</button>
                 </div>
@@ -120,10 +121,12 @@
                 </div>
             </div>
             <div id="progress" class="progress no-print" hidden><div id="progressBar"></div></div>
+            <div id="watermark" class="watermark" data-i18n="watermarkText" hidden>مستشار — الباقة المجانية</div>
             <div id="sections" class="sections"></div>
 
             <section id="chat" class="panel chat no-print" hidden>
                 <h3 data-i18n="chatTitle">اسأل مستشار عن التقرير</h3>
+                <p id="chatQuota" class="field-hint" hidden></p>
                 <div id="chatLog" class="chat-log"></div>
                 <form id="chatForm" class="chat-form">
                     <input id="chatInput" maxlength="2000" autocomplete="off" data-i18n-placeholder="chatPh"
