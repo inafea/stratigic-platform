@@ -9,8 +9,8 @@ class Settings(BaseSettings):
 
     llm_provider: str = "github"
     llm_api_key: str = ""
-    llm_model: str = "gpt-4.1-mini"
-    llm_base_url: str = "https://models.inference.ai.azure.com"
+    llm_model: str = "openai/gpt-4.1-mini"
+    llm_base_url: str = "https://models.github.ai/inference"
     llm_timeout_seconds: float = 60.0
     llm_max_retries: int = 2
     llm_temperature: float = 0.7

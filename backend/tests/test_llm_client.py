@@ -43,7 +43,7 @@ async def test_complete_sends_auth_and_model():
     out = await make_client(handler).complete("sys", "user")
     assert out == "مرحبا"
     assert seen["auth"] == "Bearer k"
-    assert seen["body"]["model"] == "gpt-4.1-mini"
+    assert seen["body"]["model"] == "openai/gpt-4.1-mini"
     assert seen["body"]["messages"][0] == {"role": "system", "content": "sys"}
 
 

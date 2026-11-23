@@ -67,7 +67,7 @@ frontend/
 | [x] T6 | `prompts/strategy_ar.md` (system prompt) + prompt loader | Prompt renders with idea/goals |
 | [x] T7 | `services/analyzer.py`: `clarify()` | Returns 3–5 questions (mocked) |
 | [x] T8 | `services/analyzer.py`: `analyze()` section by section, yielding each section | Yields all sections (mocked) |
-| [ ] T9 | FastAPI `main.py`: `/api/clarify`, `/api/analyze` (SSE), input validation, error handling | Requests to both endpoints succeed |
+| [x] T9 | FastAPI `main.py`: `/api/clarify`, `/api/analyze` (SSE), input validation, error handling | Requests to both endpoints succeed |
 | [ ] T10 | Frontend base: RTL layout, step form (idea → goals → questions) | Form submits to the API |
 | [ ] T11 | Frontend: SSE consumer + section cards, SWOT grid, roadmap timeline, DOMPurify | Live analysis shows in the browser |
 | [ ] T12 | SQLite persistence (`Report`, `Message`) + `GET/POST /api/reports` | Reports survive a restart |

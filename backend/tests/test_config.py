@@ -5,7 +5,7 @@ def test_defaults(monkeypatch):
     monkeypatch.delenv("LLM_MODEL", raising=False)
     s = Settings(_env_file=None)
     assert s.llm_provider == "github"
-    assert s.llm_model == "gpt-4.1-mini"
+    assert s.llm_model == "openai/gpt-4.1-mini"
     assert s.llm_timeout_seconds == 60.0
 
 
