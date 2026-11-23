@@ -109,6 +109,13 @@ const I18N = {
         welcomeTitle: (n) => n ? `أهلاً ${n}!` : "أهلاً بك!",
         welcomeLead: "حسابك جاهز. ابدأ بتحليل فكرتك الأولى، وسنساعدك قريباً في اختيار الباقة الأنسب لك.",
         startFirst: "ابدأ التحليل الأول",
+        heroTitle: "حوّل فكرتك إلى استراتيجية واضحة",
+        heroLead: "مستشار يحلل فكرتك التجارية كما يفعل مستشار خبير، في دقائق.",
+        heroPoints: [
+            "تحليل كامل في 8 أقسام: السوق والمنافسون والمخاطر والتوقعات المالية وخارطة الطريق",
+            "قوالب متخصصة حسب القطاع ونوع الاستراتيجية",
+            "اسأل عن تقريرك وجرّب سيناريوهات «ماذا لو»",
+        ],
         // plan limits
         templatesLocked: "🔒 القوالب المتخصصة متاحة في الباقات المدفوعة.",
         regenLocked: "إعادة توليد الأقسام غير متاحة في باقتك الحالية. قم بالترقية لاستخدامها.",
@@ -213,6 +220,13 @@ const I18N = {
         welcomeTitle: (n) => n ? `Welcome, ${n}!` : "Welcome!",
         welcomeLead: "Your account is ready. Start with your first analysis; soon we'll also help you pick the plan that fits you best.",
         startFirst: "Start your first analysis",
+        heroTitle: "Turn your idea into a clear strategy",
+        heroLead: "Mustashar analyzes your business idea the way an expert consultant would, in minutes.",
+        heroPoints: [
+            "A full analysis in 8 sections: market, competitors, risks, financial outlook and roadmap",
+            "Specialized templates by industry and strategy type",
+            "Ask about your report and explore \"what if\" scenarios",
+        ],
         templatesLocked: "🔒 Specialized templates are part of the paid plans.",
         regenLocked: "Regenerating sections isn't included in your current plan. Upgrade to use it.",
         watermarkText: "Mustashar — Free plan",
@@ -928,6 +942,16 @@ const screens = {
     },
 };
 
+/** Brand panel shown next to the login / sign-up forms. */
+function heroPanel() {
+    return el("aside", { class: "hero" },
+        el("img", { src: "logo.svg", alt: "", class: "hero-logo" }),
+        el("p", { class: "hero-name" }, t("appName")),
+        el("h2", {}, t("heroTitle")),
+        el("p", {}, t("heroLead")),
+        el("ul", {}, t("heroPoints").map((x) => el("li", {}, x))));
+}
+
 /** Show the screen for the current #/path. Logged-out users only see the public screens. */
 function route() {
     const { path, params } = parseHash();
@@ -935,11 +959,14 @@ function route() {
     if (!state.user && !PUBLIC_ROUTES.has(path)) return go("login");
     if (state.user && (path === "login" || path === "register")) return go("");
     const screen = screens[path];
+    const authMode = PUBLIC_ROUTES.has(path);
+    document.body.classList.toggle("auth-mode", authMode);
     $("authView").hidden = !screen;
     $("appView").hidden = !!screen;
     if (screen) {
         showNotice("");
-        $("authView").replaceChildren(screen(params));
+        const card = screen(params);
+        $("authView").replaceChildren(authMode ? el("div", { class: "auth-shell" }, heroPanel(), card) : card);
         $("authView").querySelector("input")?.focus();
     }
 }
