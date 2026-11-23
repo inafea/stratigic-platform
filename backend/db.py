@@ -45,11 +45,51 @@ class EmailToken(SQLModel, table=True):
     used_at: datetime | None = None
 
 
+# ---- billing ---------------------------------------------------------------------
+
+class Subscription(SQLModel, table=True):
+    """A paid plan. Users without an active subscription are on the default (free) plan."""
+    id: int | None = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="user.id", index=True)
+    plan_key: str
+    period: str = "monthly"  # monthly | yearly
+    status: str = "active"  # active | past_due | canceled
+    current_period_start: datetime
+    current_period_end: datetime
+    cancel_at_period_end: bool = False
+    card_token: str | None = None  # payment provider token for renewals (P13+)
+    created_at: datetime = Field(default_factory=_now)
+
+
+class CreditPack(SQLModel, table=True):
+    """Report credits bought once; used after the monthly quota runs out."""
+    id: int | None = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="user.id", index=True)
+    pack_key: str
+    credits_total: int
+    credits_left: int
+    purchased_at: datetime = Field(default_factory=_now)
+    expires_at: datetime
+
+
+class UsageEvent(SQLModel, table=True):
+    """One unit of usage. kind=report is counted against the monthly quota (source=plan) or a pack."""
+    id: int | None = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="user.id", index=True)
+    kind: str  # report | chat | regenerate
+    report_id: int | None = Field(default=None, foreign_key="report.id", index=True)
+    source: str = "plan"  # plan | pack
+    pack_id: int | None = Field(default=None, foreign_key="creditpack.id")
+    at: datetime = Field(default_factory=_now, index=True)
+
+
 # ---- reports ---------------------------------------------------------------------
 
 class Report(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     user_id: int | None = Field(default=None, foreign_key="user.id", index=True)
+    # plan or pack the report was made with: its model and per-report limits follow it
+    plan_key: str = "free"
     created_at: datetime = Field(default_factory=_now)
     idea: str
     goals: str
@@ -98,7 +138,7 @@ def _add_missing_columns(engine: Engine) -> None:
     """Add columns introduced after a database was created (no migration tool for SQLite here)."""
     existing = {c["name"] for c in inspect(engine).get_columns("report")}
     with engine.begin() as conn:
-        for name, default in (("industry", "auto"), ("strategy", "auto"), ("language", "ar")):
+        for name, default in (("industry", "auto"), ("strategy", "auto"), ("language", "ar"), ("plan_key", "free")):
             if name not in existing:
                 conn.execute(text(f"ALTER TABLE report ADD COLUMN {name} VARCHAR NOT NULL DEFAULT '{default}'"))
         if "user_id" not in existing:
