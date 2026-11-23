@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     llm_timeout_seconds: float = 60.0
     llm_max_retries: int = 2
     llm_temperature: float = 0.7
+    # Claude only: low | medium | high | xhigh | max (empty = model default)
+    llm_effort: str = ""
 
     database_url: str = "sqlite:///./mustashar.db"
 

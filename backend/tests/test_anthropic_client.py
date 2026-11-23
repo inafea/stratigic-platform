@@ -122,3 +122,18 @@ def test_factory_selects_anthropic(monkeypatch):
     from backend.llm.anthropic_client import AnthropicLLMClient as C
     monkeypatch.setattr(main, "get_settings", lambda: settings())
     assert isinstance(main.get_analyzer().llm, C)
+
+
+async def test_effort_sent_with_structured_output():
+    seen = {}
+
+    def handler(req):
+        seen["body"] = json.loads(req.content)
+        return httpx2.Response(200, json=message(SWOT_JSON))
+
+    c = make(handler, model="claude-haiku-5-5")
+    c.settings = c.settings.model_copy(update={"llm_effort": "low"})
+    await c.complete_json("s", "u", SWOT)
+    oc = seen["body"]["output_config"]
+    assert oc["effort"] == "low"
+    assert oc["format"]["type"] == "json_schema"

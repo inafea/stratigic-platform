@@ -41,11 +41,14 @@ class AnthropicLLMClient:
         )
 
     # ---- helpers ---------------------------------------------------------------
-    def _extra(self) -> dict[str, Any]:
-        """Beta flags + fallbacks for models that support server-side refusal fallback."""
+    def _extra(self, with_effort: bool = True) -> dict[str, Any]:
+        """Beta flags + fallbacks (on supported models) + optional effort."""
+        extra: dict[str, Any] = {"betas": []}
         if self.model in FALLBACK_MODELS:
-            return {"betas": [FALLBACK_BETA], "fallbacks": "default"}
-        return {"betas": []}
+            extra = {"betas": [FALLBACK_BETA], "fallbacks": "default"}
+        if with_effort and self.settings.llm_effort:
+            extra["output_config"] = {"effort": self.settings.llm_effort}
+        return extra
 
     @staticmethod
     def _translate(e: Exception) -> LLMError:
