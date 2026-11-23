@@ -240,7 +240,7 @@ function toggleTheme() {
 // ---------- API ----------
 async function api(path, options = {}) {
     const res = await fetch(path, {
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "X-Lang": state.lang },
         ...options,
     });
     if (!res.ok) throw new Error(await errorMessage(res));
@@ -260,7 +260,7 @@ async function errorMessage(res) {
 async function streamSSE(path, body, onEvent) {
     const res = await fetch(path, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "X-Lang": state.lang },
         body: JSON.stringify(body),
     });
     if (!res.ok) throw new Error(await errorMessage(res));

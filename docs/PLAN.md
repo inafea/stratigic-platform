@@ -92,5 +92,6 @@ frontend/
 - [x] Non-JSON responses from the LLM endpoint are reported as a clear Arabic error (seen behind a network proxy).
 - [x] Specialized consultant templates: 8 industry templates (`backend/prompts/industries/`) and 6 strategy-type templates (`backend/prompts/strategies/`), chosen in the form or left on automatic; saved with each report and used for questions, sections, regeneration and chat.
 - [x] English language: full UI translation with RTL/LTR switching, and reports generated in English (`language` saved per report).
+- [x] Server error messages in English when the interface is in English (`X-Lang` header, `backend/i18n.py`).
 - [x] Dark mode: toggle in the header, remembers the choice, follows the system setting by default; PDF export always prints in light colors.
 - [x] More robust structured output: unwraps answers nested in one extra key and retries once on malformed JSON.

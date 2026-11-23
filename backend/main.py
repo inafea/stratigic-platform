@@ -9,6 +9,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.exception_handlers import http_exception_handler
 from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from slowapi import Limiter
@@ -18,6 +19,7 @@ from slowapi.util import get_remote_address
 from sqlmodel import Session, select
 
 from backend import db
+from backend.i18n import request_lang, tr
 from backend.config import get_settings
 from backend.llm.client import LLMClient, LLMError
 from backend.schemas import (
@@ -52,8 +54,16 @@ llm_limit = limiter.limit(lambda: get_settings().rate_limit)
 
 
 @app.exception_handler(RateLimitExceeded)
-async def rate_limit_handler(_req: Request, _exc: RateLimitExceeded):
-    return JSONResponse(status_code=429, content={"detail": "عدد كبير من الطلبات. يرجى الانتظار قليلاً ثم المحاولة."})
+async def rate_limit_handler(request: Request, _exc: RateLimitExceeded):
+    msg = tr("عدد كبير من الطلبات. يرجى الانتظار قليلاً ثم المحاولة.", request_lang(request))
+    return JSONResponse(status_code=429, content={"detail": msg})
+
+
+@app.exception_handler(HTTPException)
+async def translated_http_exception_handler(request: Request, exc: HTTPException):
+    if isinstance(exc.detail, str):
+        exc = HTTPException(exc.status_code, tr(exc.detail, request_lang(request)), exc.headers)
+    return await http_exception_handler(request, exc)
 
 
 @app.middleware("http")
@@ -84,9 +94,9 @@ def get_analyzer() -> Analyzer:
 # ---- error handling ---------------------------------------------------------------
 
 @app.exception_handler(LLMError)
-async def llm_error_handler(_req: Request, exc: LLMError):
+async def llm_error_handler(request: Request, exc: LLMError):
     log.error("LLM error: %s", exc)
-    return JSONResponse(status_code=502, content={"detail": exc.user_message})
+    return JSONResponse(status_code=502, content={"detail": tr(exc.user_message, request_lang(request))})
 
 
 def sse(event: str, data: dict) -> str:
@@ -135,6 +145,7 @@ async def analyze(request: Request, req: AnalysisRequest, analyzer: Analyzer = D
         s.add(report)
         s.commit()
         report_id = report.id
+    lang = request_lang(request)
 
     async def events() -> AsyncIterator[str]:
         yield sse("report", {"id": report_id})
@@ -147,11 +158,11 @@ async def analyze(request: Request, req: AnalysisRequest, analyzer: Analyzer = D
         except LLMError as e:
             log.error("analysis %s failed: %s", report_id, e)
             db.set_status(report_id, "error")
-            yield sse("error", {"message": e.user_message})
+            yield sse("error", {"message": tr(e.user_message, lang)})
         except Exception:
             log.exception("unexpected failure in analysis %s", report_id)
             db.set_status(report_id, "error")
-            yield sse("error", {"message": "حدث خطأ غير متوقع أثناء التحليل."})
+            yield sse("error", {"message": tr("حدث خطأ غير متوقع أثناء التحليل.", lang)})
 
     return StreamingResponse(events(), media_type="text/event-stream",
                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
@@ -245,6 +256,7 @@ async def chat(
     history = [(m.role, m.content) for m in db.list_messages(session, report_id)][-10:]
     session.add(db.Message(report_id=report_id, role="user", content=body.message))
     session.commit()
+    lang = request_lang(request)
 
     async def events() -> AsyncIterator[str]:
         parts: list[str] = []
@@ -254,11 +266,11 @@ async def chat(
                 yield sse("delta", {"text": chunk})
         except LLMError as e:
             log.error("chat on report %s failed: %s", report_id, e)
-            yield sse("error", {"message": e.user_message})
+            yield sse("error", {"message": tr(e.user_message, lang)})
             return
         except Exception:
             log.exception("unexpected chat failure on report %s", report_id)
-            yield sse("error", {"message": "حدث خطأ غير متوقع."})
+            yield sse("error", {"message": tr("حدث خطأ غير متوقع.", lang)})
             return
         with Session(db.get_engine()) as s:
             s.add(db.Message(report_id=report_id, role="assistant", content="".join(parts)))
