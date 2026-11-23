@@ -35,12 +35,31 @@ def idea_message(data: IdeaInput) -> str:
     return "\n\n".join(parts)
 
 
-def section_message(req: AnalysisRequest, key: str, previous: dict[str, dict] | None = None) -> str:
+def section_message(
+    req: AnalysisRequest, key: str, previous: dict[str, dict] | None = None, instructions: str | None = None
+) -> str:
     _model, title = SECTIONS[key]
     prev_text = ""
     if previous:
         prev_text = "\nالأقسام التي تم إعدادها سابقاً (للاتساق):\n" + json.dumps(previous, ensure_ascii=False)
-    return idea_message(req) + "\n\n" + render(load("section_ar"), title=title, previous=prev_text).strip()
+    msg = idea_message(req) + "\n\n" + render(load("section_ar"), title=title, previous=prev_text).strip()
+    if instructions:
+        msg += f"\n\nتعليمات إضافية من المستخدم لهذا القسم:\n{instructions}"
+    return msg
+
+
+def chat_system(report_sections: dict[str, dict]) -> str:
+    report_json = json.dumps(report_sections, ensure_ascii=False)
+    return strategy_system() + "\n\n" + render(load("chat_ar"), report=report_json)
+
+
+def chat_message(req: IdeaInput, history: list[tuple[str, str]], question: str) -> str:
+    parts = [idea_message(req)]
+    if history:
+        names = {"user": "المستخدم", "assistant": "مستشار"}
+        parts.append("المحادثة السابقة:\n" + "\n".join(f"{names.get(r, r)}: {c}" for r, c in history))
+    parts.append(f"السؤال الجديد:\n{question}")
+    return "\n\n".join(parts)
 
 
 def strategy_system() -> str:

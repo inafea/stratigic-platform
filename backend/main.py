@@ -16,7 +16,7 @@ from sqlmodel import Session, select
 from backend import db
 from backend.config import get_settings
 from backend.llm.client import LLMClient, LLMError
-from backend.schemas import SECTIONS, AnalysisRequest, IdeaInput
+from backend.schemas import SECTIONS, AnalysisRequest, ChatRequest, IdeaInput, RegenerateRequest
 from backend.services.analyzer import Analyzer
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -149,6 +149,61 @@ async def delete_report(report_id: int, session: Session = Depends(db.get_sessio
         session.delete(m)
     session.delete(r)
     session.commit()
+
+
+@app.post("/api/reports/{report_id}/sections/{key}/regenerate")
+async def regenerate_section(
+    report_id: int,
+    key: str,
+    body: RegenerateRequest,
+    analyzer: Analyzer = Depends(get_analyzer),
+    session: Session = Depends(db.get_session),
+):
+    if key not in SECTIONS:
+        raise HTTPException(404, "القسم غير موجود.")
+    r = _get_report(session, report_id)
+    req = AnalysisRequest.model_validate({"idea": r.idea, "goals": r.goals, "answers": r.answers})
+    data = await analyzer.regenerate_section(req, key, r.sections, body.instructions)
+    db.save_section(report_id, key, data)
+    return {"key": key, "title": SECTIONS[key][1], "data": data}
+
+
+@app.post("/api/reports/{report_id}/chat")
+async def chat(
+    report_id: int,
+    body: ChatRequest,
+    analyzer: Analyzer = Depends(get_analyzer),
+    session: Session = Depends(db.get_session),
+):
+    """Stream a follow-up answer as SSE `delta` events, then `done`. Both messages are saved."""
+    r = _get_report(session, report_id)
+    req = AnalysisRequest.model_validate({"idea": r.idea, "goals": r.goals, "answers": r.answers})
+    sections = dict(r.sections)
+    history = [(m.role, m.content) for m in db.list_messages(session, report_id)][-10:]
+    session.add(db.Message(report_id=report_id, role="user", content=body.message))
+    session.commit()
+
+    async def events() -> AsyncIterator[str]:
+        parts: list[str] = []
+        try:
+            async for chunk in analyzer.chat(req, sections, history, body.message):
+                parts.append(chunk)
+                yield sse("delta", {"text": chunk})
+        except LLMError as e:
+            log.error("chat on report %s failed: %s", report_id, e)
+            yield sse("error", {"message": e.user_message})
+            return
+        except Exception:
+            log.exception("unexpected chat failure on report %s", report_id)
+            yield sse("error", {"message": "حدث خطأ غير متوقع."})
+            return
+        with Session(db.get_engine()) as s:
+            s.add(db.Message(report_id=report_id, role="assistant", content="".join(parts)))
+            s.commit()
+        yield sse("done", {})
+
+    return StreamingResponse(events(), media_type="text/event-stream",
+                             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
 
 # ---- frontend (mounted last so /api routes win) ---------------------------------------

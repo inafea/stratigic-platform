@@ -20,12 +20,28 @@ class Analyzer:
         result = await self.llm.complete_json(prompts.clarify_system(), prompts.idea_message(data), ClarifyingQuestions)
         return [q.strip() for q in result.questions if q.strip()][:5]
 
-    async def generate_section(self, req: AnalysisRequest, key: str, context: dict[str, dict]) -> dict:
+    async def generate_section(
+        self, req: AnalysisRequest, key: str, context: dict[str, dict], instructions: str | None = None
+    ) -> dict:
         model, _title = SECTIONS[key]
         result = await self.llm.complete_json(
-            prompts.strategy_system(), prompts.section_message(req, key, context or None), model
+            prompts.strategy_system(), prompts.section_message(req, key, context or None, instructions), model
         )
         return result.model_dump()
+
+    async def regenerate_section(
+        self, req: AnalysisRequest, key: str, sections: dict[str, dict], instructions: str | None = None
+    ) -> dict:
+        """Rewrite one section, using the other sections as context."""
+        context = {k: v for k, v in sections.items() if k != key}
+        return await self.generate_section(req, key, context, instructions)
+
+    async def chat(
+        self, req: IdeaInput, sections: dict[str, dict], history: list[tuple[str, str]], question: str
+    ) -> AsyncIterator[str]:
+        """Stream an answer to a follow-up question about the report."""
+        async for chunk in self.llm.stream(prompts.chat_system(sections), prompts.chat_message(req, history, question)):
+            yield chunk
 
     async def analyze(self, req: AnalysisRequest) -> AsyncIterator[tuple[str, dict]]:
         """Generate every section in order, yielding (key, data) as each completes.

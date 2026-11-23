@@ -28,6 +28,14 @@ class AnalysisRequest(IdeaInput):
     answers: list[QAPair] = Field(default_factory=list, max_length=5)
 
 
+class ChatRequest(BaseModel):
+    message: str = Field(min_length=1, max_length=2000)
+
+
+class RegenerateRequest(BaseModel):
+    instructions: str | None = Field(default=None, max_length=1000)
+
+
 # ---- report sections ---------------------------------------------------------
 
 Level = Literal["منخفض", "متوسط", "مرتفع"]
