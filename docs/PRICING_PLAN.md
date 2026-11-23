@@ -103,6 +103,8 @@ A rule-based scorer maps the answers to a plan, shows **why** ("You expect aroun
 | [x] P9 | `require_quota` guard on clarify, analyze, chat and regenerate; 402 with bilingual upgrade message; plan-based model choice in `get_analyzer` | Over-limit Free user gets 402; Pro user gets the premium model (tests) |
 | [x] P10 | Feature flags: templates locked on Free, PDF watermark on Free, chat limit per report | UI hides or locks features; server enforces them too (tests) |
 
+> **On hold (2026-11-23):** Steps C and D are postponed at the user's request after Step B was finished. Resume from **P11** when asked. Until then nobody can upgrade: users are on Free unless a subscription or pack is added directly in the database.
+
 **Step C: Recommender and pricing page**
 | # | Task | Done when |
 |---|---|---|
