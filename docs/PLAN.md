@@ -60,7 +60,7 @@ frontend/
 | # | Task | Done when |
 |---|---|---|
 | [x] T1 | Project skeleton: `backend/`, `frontend/`, `.gitignore`, `.env.example`, pinned `requirements.txt`; remove old files | `pip install -r requirements.txt` works |
-| [ ] T2 | `config.py` (pydantic-settings) | Settings load from `.env` |
+| [x] T2 | `config.py` (pydantic-settings) | Settings load from `.env` |
 | [ ] T3 | `llm/client.py`: GitHub Models provider, timeout, retries, `complete_json` | Unit test with mocked HTTP passes |
 | [ ] T4 | Streaming support in the client (`stream`) | Mocked stream test passes |
 | [ ] T5 | `schemas.py`: StrategyReport + section models | Schema tests pass |
